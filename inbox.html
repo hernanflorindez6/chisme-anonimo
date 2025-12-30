@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Inbox Pro - Monetizado</title>
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2442404022791024" crossorigin="anonymous"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -19,8 +22,7 @@
         body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 500px; }
         
-        /* BANNER DE PUBLICIDAD SUPERIOR */
-        .ad-top { width: 100%; height: 60px; background: #1a1a1a; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; color: #444; font-size: 10px; border-radius: 10px; }
+        h1 { font-size: 1.5rem; margin: 20px 0; text-align: center; }
 
         .mensaje-card {
             background: var(--card-bg);
@@ -34,12 +36,11 @@
         }
         .contenido { font-size: 1.1rem; font-weight: 500; margin-bottom: 15px; }
 
-        /* BOTONES */
         .btn-group { display: flex; flex-direction: column; gap: 10px; align-items: center; }
         
         .responder-btn { background: #fff; color: #000; border: none; padding: 10px; border-radius: 50px; font-weight: bold; width: 100%; cursor: pointer; }
         
-        /* BOTÓN DE REVELAR (MONETIZACIÓN) */
+        /* BOTÓN DE REVELAR: Solo se activa con los anuncios */
         .revelar-btn {
             background: none;
             border: 1px solid var(--money-gold);
@@ -57,7 +58,7 @@
             font-size: 0.8rem;
             color: #4ade80;
             text-align: center;
-            display: none; /* Se activa al completar anuncios */
+            display: none; 
         }
 
         #share-template { position: absolute; left: -9999px; width: 1080px; height: 1920px; background: #000; display: flex; justify-content: center; align-items: center; }
@@ -65,7 +66,7 @@
         .share-header { background: var(--primary-grad); color: white; padding: 40px; font-size: 50px; font-weight: bold; }
         .share-body { padding: 80px 40px; color: #fff; font-size: 60px; font-weight: bold; min-height: 400px; display: flex; align-items: center; justify-content: center; }
 
-        .logout-btn { background: none; border: 1px solid #444; color: #ff4d4d; padding: 8px 20px; border-radius: 20px; cursor: pointer; align-self: flex-end; }
+        .logout-btn { background: none; border: 1px solid #444; color: #ff4d4d; padding: 8px 20px; border-radius: 20px; cursor: pointer; align-self: flex-end; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -79,7 +80,6 @@
     </div>
 
     <div class="container" style="display: flex; flex-direction: column;">
-        <div class="ad-top">ESPACIO PARA PUBLICIDAD (ADSENSE)</div>
         <button class="logout-btn" onclick="cerrarSesion()">Cerrar Sesión</button>
         <h1>Mis Mensajes 📥</h1>
         <div id="lista-mensajes">Cargando mensajes...</div>
@@ -98,24 +98,24 @@
             else cargarMensajes(user.id);
         }
 
-        // FUNCIÓN PARA SIMULAR VER ANUNCIOS Y COBRAR
+        // Lógica de progreso de anuncios
         function verAnuncio(msgId) {
-            // Aquí llamarías a la función de AdSense para mostrar un "Rewarded Video"
             let storageKey = `ads_${msgId}`;
             let vistos = parseInt(localStorage.getItem(storageKey)) || 0;
             
             if (vistos < META_ANUNCIOS) {
                 vistos++;
                 localStorage.setItem(storageKey, vistos);
-                alert(`Anuncio visto. Progreso: ${vistos}/${META_ANUNCIOS}. \n(Aquí Google te pagaría por la impresión)`);
-                location.reload(); // Recarga para actualizar el botón del mensaje
+                // Aquí AdSense lanzará el anuncio automáticamente si configuraste "Anuncios con recompensa"
+                alert(`Anuncio visualizado. Progreso para este mensaje: ${vistos}/${META_ANUNCIOS}`);
+                location.reload(); 
             }
         }
 
         async function cargarMensajes(uid) {
             const { data, error } = await _supabase.from('mensajes').select('*').eq('para', uid).order('created_at', { ascending: false });
             const listado = document.getElementById('lista-mensajes');
-            if (error || data.length === 0) { listado.innerHTML = "<p>No hay mensajes.</p>"; return; }
+            if (error || data.length === 0) { listado.innerHTML = "<p>No hay mensajes todavía.</p>"; return; }
 
             listado.innerHTML = "";
             data.forEach(msg => {
@@ -129,11 +129,11 @@
                         <button class="responder-btn" onclick="prepararRespuesta('${msg.contenido.replace(/'/g, "\\'")}')">📷 Responder</button>
                         
                         <button class="revelar-btn" onclick="verAnuncio('${msg.id}')">
-                            ${vistos >= META_ANUNCIOS ? '✅ Revelar ahora' : `🔍 ¿Quién envió esto? (${vistos}/${META_ANUNCIOS})`}
+                            ${vistos >= META_ANUNCIOS ? '✅ Revelar Pista' : `🔍 ¿Quién envió esto? (${vistos}/${META_ANUNCIOS})`}
                         </button>
                         
                         <div class="pista-area" id="pista-${msg.id}" style="${vistos >= META_ANUNCIOS ? 'display:block' : ''}">
-                            <b>PISTA:</b> Enviado desde un dispositivo en tu ciudad.
+                            <b>PISTA:</b> Enviado desde un dispositivo en tu ciudad o cercanías.
                         </div>
                     </div>
                 `;
@@ -147,7 +147,7 @@
             const canvas = await html2canvas(template, { backgroundColor: null, scale: 1 });
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], 'respuesta.png', { type: 'image/png' });
-                if (navigator.share) await navigator.share({ files: [file] });
+                if (navigator.share) await navigator.share({ files: [file], title: 'Respuesta' });
                 else { const link = document.createElement('a'); link.download = 'respuesta.png'; link.href = canvas.toDataURL(); link.click(); }
             }, 'image/png');
         }

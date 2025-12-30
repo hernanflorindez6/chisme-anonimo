@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enviar Mensaje Anónimo</title>
     
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2442404022791024" crossorigin="anonymous"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -116,7 +118,6 @@
         }
         .send-btn:active { transform: scale(0.96); }
 
-        /* ESTILO DEL AVISO PROFESIONAL (Toast) */
         #toast {
             position: fixed;
             bottom: -100px;
@@ -167,7 +168,6 @@
     <div id="toast">Mensaje enviado</div>
 
     <script>
-        // 1. REDIRECCIÓN SI NO HAY USUARIO
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('u'); 
 
@@ -175,24 +175,20 @@
             window.location.href = "index.html"; 
         }
 
-        // 2. CONFIGURACIÓN SUPABASE
         const supabaseUrl = 'https://wfnhkuilbtomvtijsiwm.supabase.co';
         const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // 3. FUNCIÓN DE AVISO (TOAST)
         function mostrarAviso(mensaje, tipo = "success") {
             const toast = document.getElementById('toast');
             toast.innerText = mensaje;
             toast.style.color = (tipo === "error") ? "var(--error-red)" : "var(--success-green)";
-            
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3500);
         }
 
-        // 4. MENSAJE AL AZAR (Estilo NGL)
         function ponerTextoAzar() {
             const frases = [
                 "¿Quién te gusta?",
@@ -205,7 +201,6 @@
             document.getElementById('msg-input').value = random;
         }
 
-        // 5. ENVIAR A LA TABLA
         async function enviarMensaje() {
             const texto = document.getElementById('msg-input').value;
             const btn = document.getElementById('main-btn');

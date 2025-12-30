@@ -56,13 +56,13 @@
 
         .mensaje-card:hover { transform: scale(1.02); border-color: #cc2366; }
 
-        /* --- MENSAJE CENTRADO E INTERLINEADO 1.5 --- */
+        /* DISEÑO SOLICITADO: CENTRADO E INTERLINEADO 1.5 */
         .contenido { 
             font-size: 1.15rem; 
             font-weight: 500; 
             margin-bottom: 25px; 
-            line-height: 1.5; /* Interlineado tipo Word */
-            text-align: center; /* Texto centrado */
+            line-height: 1.5; 
+            text-align: center; 
         }
 
         .btn-group { display: flex; flex-direction: column; gap: 12px; }
@@ -95,7 +95,6 @@
         #share-template { position: absolute; left: -9999px; width: 1080px; height: 1920px; background: #000; display: flex; justify-content: center; align-items: center; }
         .share-card { background: #121212; width: 850px; border-radius: 60px; text-align: center; border: 2px solid #333; overflow: hidden; }
         .share-header { background: var(--primary-grad); color: white; padding: 50px; font-size: 55px; font-weight: bold; }
-        /* Share body centrado también */
         .share-body { padding: 100px 50px; color: #fff; font-size: 65px; font-weight: bold; min-height: 500px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.5; }
     </style>
 </head>
@@ -129,7 +128,7 @@
         const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const META_CLICS = 5000; // META PROTEGIDA
+        const META_CLICS = 5000; 
         let miNombreUsuario = "";
 
         async function verificarSesion() {
@@ -169,9 +168,24 @@
         }
 
         async function cargarMensajes(uid) {
-            const { data, error } = await _supabase.from('mensajes').select('*').eq('para', uid).order('creado_el', { ascending: false });
+            // CORRECCIÓN: Se cambió 'creado_el' por 'created_at' que es el nombre por defecto
+            const { data, error } = await _supabase.from('mensajes')
+                .select('*')
+                .eq('para', uid)
+                .order('created_at', { ascending: false });
+
             const listado = document.getElementById('lista-mensajes');
-            if (error || data.length === 0) { listado.innerHTML = "<p style='text-align:center; color:#666;'>No hay mensajes todavía.</p>"; return; }
+            
+            if (error) {
+                console.error("Error cargando mensajes:", error);
+                listado.innerHTML = "<p style='text-align:center; color:red;'>Error al conectar con la base de datos.</p>";
+                return;
+            }
+
+            if (data.length === 0) { 
+                listado.innerHTML = "<p style='text-align:center; color:#666;'>No hay mensajes todavía.</p>"; 
+                return; 
+            }
 
             listado.innerHTML = "";
             data.forEach((msg, index) => {

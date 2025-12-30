@@ -19,8 +19,26 @@
             --text-dim: #a0a0a0;
             --money-gold: #ffd700;
         }
-        body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 500px; }
+
+        /* --- NUEVAS ANIMACIONES CSS --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            font-family: -apple-system, sans-serif; 
+            margin: 0; padding: 20px; 
+            display: flex; flex-direction: column; align-items: center; 
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 500px; 
+            animation: fadeInUp 0.8s ease-out; /* Entrada suave del contenedor */
+        }
         
         h1 { font-size: 1.5rem; margin: 20px 0; text-align: center; }
 
@@ -33,14 +51,26 @@
             border-left: 5px solid #c2185b;
             display: flex;
             flex-direction: column;
+            opacity: 0; /* Empieza invisible para la cascada */
+            animation: fadeInUp 0.5s ease-out forwards;
+            transition: transform 0.3s ease;
         }
+
+        .mensaje-card:hover { transform: scale(1.02); } /* Pequeño pulso al tocarlo */
+
         .contenido { font-size: 1.1rem; font-weight: 500; margin-bottom: 15px; }
 
         .btn-group { display: flex; flex-direction: column; gap: 10px; align-items: center; }
         
-        .responder-btn { background: #fff; color: #000; border: none; padding: 10px; border-radius: 50px; font-weight: bold; width: 100%; cursor: pointer; }
+        .responder-btn, .revelar-btn, .logout-btn { 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+        }
+
+        .responder-btn:active, .revelar-btn:active { transform: scale(0.95); }
+
+        .responder-btn { background: #fff; color: #000; border: none; padding: 10px; border-radius: 50px; font-weight: bold; width: 100%; }
         
-        /* BOTÓN DE REVELAR: Solo se activa con los anuncios */
         .revelar-btn {
             background: none;
             border: 1px solid var(--money-gold);
@@ -49,24 +79,27 @@
             border-radius: 50px;
             font-weight: bold;
             width: 100%;
-            cursor: pointer;
             font-size: 0.8rem;
         }
 
-        .pista-area {
-            margin-top: 10px;
-            font-size: 0.8rem;
-            color: #4ade80;
+        /* ÁREA DEL LINK RECUPERADO */
+        #link-recuperado {
+            display: none;
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px dashed var(--money-gold);
             text-align: center;
-            display: none; 
+            animation: fadeInUp 0.4s ease-out;
         }
 
+        .logout-btn { background: none; border: 1px solid #444; color: #ff4d4d; padding: 8px 20px; border-radius: 20px; align-self: flex-end; }
+        
         #share-template { position: absolute; left: -9999px; width: 1080px; height: 1920px; background: #000; display: flex; justify-content: center; align-items: center; }
         .share-card { background: #121212; width: 800px; border-radius: 60px; text-align: center; border: 2px solid #333; }
         .share-header { background: var(--primary-grad); color: white; padding: 40px; font-size: 50px; font-weight: bold; }
         .share-body { padding: 80px 40px; color: #fff; font-size: 60px; font-weight: bold; min-height: 400px; display: flex; align-items: center; justify-content: center; }
-
-        .logout-btn { background: none; border: 1px solid #444; color: #ff4d4d; padding: 8px 20px; border-radius: 20px; cursor: pointer; align-self: flex-end; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -79,8 +112,18 @@
         </div>
     </div>
 
-    <div class="container" style="display: flex; flex-direction: column;">
-        <button class="logout-btn" onclick="cerrarSesion()">Cerrar Sesión</button>
+    <div class="container">
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 20px; align-items: center;">
+            <button id="btn-mi-link" class="revelar-btn" style="width: auto; padding: 8px 15px; border-radius: 20px; font-size: 0.75rem;" onclick="gestionarLink()">🔗 Mi Link</button>
+            <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
+        </div>
+
+        <div id="link-recuperado">
+            <p style="font-size: 0.8rem; color: var(--text-dim); margin: 0 0 10px 0;">Tu enlace para compartir:</p>
+            <code id="texto-link" style="color: var(--money-gold); word-break: break-all; font-size: 0.85rem;"></code>
+            <button class="responder-btn" style="margin-top: 15px; padding: 8px; font-size: 0.8rem;" onclick="copiarLinkRecuperado()">Copiar Enlace</button>
+        </div>
+
         <h1>Mis Mensajes 📥</h1>
         <div id="lista-mensajes">Cargando mensajes...</div>
     </div>
@@ -91,23 +134,43 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         const META_ANUNCIOS = 500; 
+        let miNombreUsuario = "";
 
         async function verificarYVer() {
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) window.location.href = "index.html";
-            else cargarMensajes(user.id);
+            else {
+                const { data: prof } = await _supabase.from('perfiles').select('username').eq('id', user.id).single();
+                miNombreUsuario = prof ? prof.username : user.id;
+                cargarMensajes(user.id);
+            }
         }
 
-        // Lógica de progreso de anuncios
+        function gestionarLink() {
+            const yaVisto = localStorage.getItem('ad_link_visto');
+            if (yaVisto === '1') {
+                const areaLink = document.getElementById('link-recuperado');
+                document.getElementById('texto-link').innerText = window.location.origin + "/send.html?u=" + miNombreUsuario;
+                areaLink.style.display = areaLink.style.display === 'none' ? 'block' : 'none';
+            } else {
+                alert("Para recuperar tu link, debes ver 1 anuncio rápido.");
+                localStorage.setItem('ad_link_visto', '1');
+                location.reload(); 
+            }
+        }
+
+        function copiarLinkRecuperado() {
+            navigator.clipboard.writeText(document.getElementById('texto-link').innerText);
+            alert("¡Link copiado!");
+        }
+
         function verAnuncio(msgId) {
             let storageKey = `ads_${msgId}`;
             let vistos = parseInt(localStorage.getItem(storageKey)) || 0;
-            
             if (vistos < META_ANUNCIOS) {
                 vistos++;
                 localStorage.setItem(storageKey, vistos);
-                // Aquí AdSense lanzará el anuncio automáticamente si configuraste "Anuncios con recompensa"
-                alert(`Anuncio visualizado. Progreso para este mensaje: ${vistos}/${META_ANUNCIOS}`);
+                alert(`Progreso: ${vistos}/${META_ANUNCIOS}`);
                 location.reload(); 
             }
         }
@@ -118,20 +181,20 @@
             if (error || data.length === 0) { listado.innerHTML = "<p>No hay mensajes todavía.</p>"; return; }
 
             listado.innerHTML = "";
-            data.forEach(msg => {
+            data.forEach((msg, index) => {
                 let vistos = parseInt(localStorage.getItem(`ads_${msg.id}`)) || 0;
                 const card = document.createElement('div');
                 card.className = 'mensaje-card';
+                // EFECTO CASCADA: cada mensaje tarda 0.1s más que el anterior en aparecer
+                card.style.animationDelay = `${index * 0.1}s`; 
                 
                 card.innerHTML = `
                     <div class="contenido">${msg.contenido}</div>
                     <div class="btn-group">
                         <button class="responder-btn" onclick="prepararRespuesta('${msg.contenido.replace(/'/g, "\\'")}')">📷 Responder</button>
-                        
                         <button class="revelar-btn" onclick="verAnuncio('${msg.id}')">
                             ${vistos >= META_ANUNCIOS ? '✅ Revelar Pista' : `🔍 ¿Quién envió esto? (${vistos}/${META_ANUNCIOS})`}
                         </button>
-                        
                         <div class="pista-area" id="pista-${msg.id}" style="${vistos >= META_ANUNCIOS ? 'display:block' : ''}">
                             <b>PISTA:</b> Enviado desde un dispositivo en tu ciudad o cercanías.
                         </div>

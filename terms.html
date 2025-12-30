@@ -11,51 +11,122 @@
         :root {
             --bg-color: #000000;
             --card-bg: #121212;
+            --primary-grad: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
             --text-main: #ffffff;
             --text-dim: #a0a0a0;
-            --primary: #cc2366;
+            --primary-color: #cc2366;
+            /* SEPARACIÓN DE CURVA PARA EVITAR ERRORES */
+            --bezier-curve: cubic-bezier(0.23, 1, 0.32, 1);
+            --transition-smooth: all 0.4s var(--bezier-curve);
         }
+
+        /* --- ANIMACIONES CSS --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: -apple-system, sans-serif;
             line-height: 1.6;
+            margin: 0;
             padding: 40px 20px;
-            max-width: 800px;
-            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            overflow-x: hidden;
         }
-        h1 { color: var(--primary); border-bottom: 2px solid #333; padding-bottom: 10px; }
-        h2 { margin-top: 30px; font-size: 1.2rem; color: #eee; }
-        p { color: var(--text-dim); font-size: 0.95rem; }
-        .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary); text-decoration: none; font-weight: bold; }
-        footer { margin-top: 50px; border-top: 1px solid #333; padding-top: 20px; text-align: center; font-size: 0.8rem; color: #555; }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            /* CORRECCIÓN SINTAXIS: Se usa solo la curva, no el "all" */
+            animation: fadeInUp 0.8s var(--bezier-curve) forwards;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 28px;
+            padding: 40px;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 { 
+    background: var(--primary-grad); 
+    /* Agregamos la versión estándar para quitar la advertencia */
+    background-clip: text; 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    font-size: 2rem; 
+    margin-bottom: 20px; 
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+      }
+
+        h2 { color: var(--primary-color); font-size: 1.3rem; margin-top: 30px; }
+        p { color: var(--text-dim); font-size: 1rem; }
+        b { color: #fff; }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 25px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            background: #222;
+            padding: 10px 20px;
+            border-radius: 50px;
+            transition: var(--transition-smooth);
+            border: 1px solid #444;
+        }
+
+        .back-link:hover {
+            background: #333;
+            transform: translateX(-5px);
+            border-color: var(--primary-color);
+        }
+
+        footer {
+            margin-top: 50px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #555;
+        }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="back-link">← Volver al Inicio</a>
+    <div class="container">
+        <a href="index.html" class="back-link">← Volver al Inicio</a>
 
-    <h1>Términos y Condiciones de Uso</h1>
-    <p>Última actualización: 30 de diciembre de 2025</p>
+        <div class="card">
+            <h1>Términos y Condiciones de Uso</h1>
+            <p>Última actualización: <b>30 de diciembre de 2025</b></p>
 
-    <h2>1. Descripción del Servicio</h2>
-    <p>Nuestra plataforma permite a los usuarios recibir mensajes anónimos a través de un enlace personalizado. Al utilizar este servicio, usted acepta que los mensajes son enviados por terceros y que la plataforma no es responsable del contenido de los mismos.</p>
+            <h2>1. Descripción del Servicio</h2>
+            <p>Nuestra plataforma permite a los usuarios recibir mensajes anónimos a través de un enlace personalizado. Al utilizar este servicio, usted acepta que los mensajes son enviados por terceros y que la plataforma no es responsable del contenido de los mismos.</p>
 
-    <h2>2. Uso Responsable</h2>
-    <p>Queda estrictamente prohibido utilizar esta herramienta para el acoso, bullying, amenazas o cualquier actividad ilegal. Nos reservamos el derecho de suspender cualquier cuenta que viole estas normas.</p>
+            <h2>2. Uso Responsable</h2>
+            <p>Queda estrictamente prohibido utilizar esta herramienta para el acoso, bullying, amenazas o cualquier actividad ilegal. Nos reservamos el derecho de suspender cualquier cuenta que viole estas normas.</p>
 
-    <h2>3. Publicidad y Monetización</h2>
-    <p>Este sitio web utiliza servicios de terceros, como <b>Google AdSense</b>, para mostrar anuncios. Estos servicios pueden utilizar cookies para mostrar publicidad basada en sus intereses. Al usar la web, usted consiente la visualización de estos anuncios.</p>
+            <h2>3. Publicidad y Monetización</h2>
+            <p>Este sitio web utiliza servicios de terceros, como <b>Google AdSense</b>, para mostrar anuncios. Estos servicios pueden utilizar cookies para mostrar publicidad basada en sus intereses. Al usar la web, usted consiente la visualización de estos anuncios.</p>
 
-    <h2>4. Privacidad de Datos</h2>
-    <p>Utilizamos <b>Supabase</b> para la gestión de usuarios y bases de datos. Sus datos están protegidos por Row Level Security (RLS). No vendemos su información personal a terceros.</p>
+            <h2>4. Privacidad de Datos</h2>
+            <p>Utilizamos <b>Supabase</b> para la gestión de usuarios y bases de datos. Sus datos están protegidos por Row Level Security (RLS). No vendemos su información personal a terceros.</p>
 
-    <h2>5. Revelación de Identidad</h2>
-    <p>La opción de "Revelar Pistas" es una función de entretenimiento. Las pistas proporcionadas (como ubicación general o tipo de dispositivo) se generan a partir de datos técnicos básicos y no garantizan la identificación exacta del remitente.</p>
+            <h2>5. Revelación de Identidad</h2>
+            <p>La opción de "Revelar Pistas" es una función de entretenimiento. Las pistas proporcionadas (como ubicación general o tipo de dispositivo) se generan a partir de datos técnicos básicos y no garantizan la identificación exacta del remitente.</p>
 
-    <footer>
-        &copy; 2025 TuWeb Team. Todos los derechos reservados.
-    </footer>
+            <footer>
+                &copy; 2025 TuWeb Team. Todos los derechos reservados.
+            </footer>
+        </div>
+    </div>
 
 </body>
 </html>

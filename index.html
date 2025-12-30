@@ -6,8 +6,8 @@
     <title>Crear mi Link Anónimo</title>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2442404022791024" crossorigin="anonymous"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         :root {
             --bg-color: #000000;
@@ -16,40 +16,90 @@
             --text-main: #ffffff;
             --error-red: #ff4d4d;
             --success-green: #4ade80;
+            --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; overflow-x: hidden; }
-        .container { width: 100%; max-width: 400px; text-align: center; }
-        .card { background-color: var(--card-bg); border-radius: 28px; padding: 40px 20px; border: 1px solid #333; }
-        
-        h1 { font-size: 1.8rem; margin-bottom: 10px; }
-        p { color: #a0a0a0; margin-bottom: 30px; }
-        input { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; outline: none; transition: 0.3s; }
-        input:focus { border-color: #cc2366; }
-        
-        .btn { background: var(--primary-grad); color: white; border: none; width: 100%; padding: 16px; border-radius: 40px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn:disabled { opacity: 0.5; }
 
-        /* ESTILO DEL AVISO PROFESIONAL (Toast) */
-        #toast {
-            position: fixed;
-            bottom: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #222;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
-            transition: bottom 0.4s ease;
-            z-index: 1000;
-            white-space: nowrap;
-            border: 1px solid #444;
+        /* --- KEYFRAMES DE ANIMACIÓN --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(204, 35, 102, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(204, 35, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(204, 35, 102, 0); }
+        }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            font-family: -apple-system, system-ui, sans-serif; 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; margin: 0; padding: 20px; overflow-x: hidden; 
+        }
+
+        .container { width: 100%; max-width: 400px; text-align: center; }
+
+        /* Tarjeta con entrada suave */
+        .card { 
+            background-color: var(--card-bg); 
+            border-radius: 28px; 
+            padding: 40px 20px; 
+            border: 1px solid #333;
+            animation: fadeInUp 0.8s var(--transition-smooth);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        h1 { font-size: 1.8rem; margin-bottom: 10px; transition: var(--transition-smooth); }
+        p { color: #a0a0a0; margin-bottom: 30px; }
+
+        input { 
+            width: 100%; padding: 15px; margin-bottom: 10px; 
+            border-radius: 12px; border: 1px solid #333; 
+            background: #1a1a1a; color: white; box-sizing: border-box; 
+            outline: none; transition: var(--transition-smooth); 
+        }
+
+        input:focus { border-color: #cc2366; background: #222; transform: translateY(-2px); }
+        
+        /* Botones con micro-interacción */
+        .btn { 
+            background: var(--primary-grad); color: white; border: none; 
+            width: 100%; padding: 16px; border-radius: 40px; 
+            font-weight: bold; cursor: pointer; margin-top: 10px; 
+            transition: var(--transition-smooth);
+        }
+
+        .btn:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.1); animation: pulse 2s infinite; }
+        .btn:active { transform: translateY(0) scale(0.98); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Toast animado */
+        #toast { 
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); 
+            background: #222; padding: 12px 25px; border-radius: 50px; 
+            font-size: 0.9rem; font-weight: 600; box-shadow: 0 5px 20px rgba(0,0,0,0.8); 
+            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 1000; white-space: nowrap; border: 1px solid #444; 
         }
         #toast.show { bottom: 40px; }
 
-        .link-box { margin-top: 20px; padding: 15px; background: #222; border-radius: 12px; display: none; word-break: break-all; border: 1px dashed #555; }
-        .toggle-auth { background:none; border:none; color:#cc2366; margin-top:15px; cursor:pointer; font-weight: 600; }
+        .link-box { 
+            margin-top: 20px; padding: 15px; background: #222; 
+            border-radius: 12px; display: none; word-break: break-all; 
+            border: 1px dashed #555; animation: fadeInUp 0.5s var(--transition-smooth); 
+        }
+
+        .toggle-auth { 
+            background:none; border:none; color:#cc2366; 
+            margin-top:15px; cursor:pointer; font-weight: 600; 
+            transition: var(--transition-smooth); 
+        }
+        .toggle-auth:hover { color: #f09433; transform: scale(1.05); }
+
+        /* Contenedores para transiciones de campos */
+        #confirm-container, #username { transition: var(--transition-smooth); }
     </style>
 </head>
 <body>
@@ -58,6 +108,8 @@
         <div class="card" id="auth-section">
             <h1 id="auth-title">¡Obtén tus propios mensajes!</h1>
             <p id="auth-desc">Regístrate para crear tu link anónimo.</p>
+            
+            <input type="text" id="username" placeholder="Elige tu nombre de usuario (ej: hernan)">
             
             <input type="email" id="email" placeholder="Tu correo electrónico">
             <div id="confirm-container">
@@ -82,12 +134,18 @@
     <div id="toast">Aviso</div>
 
     <script>
-        // CONFIGURACIÓN SUPABASE
         const supabaseUrl = 'https://wfnhkuilbtomvtijsiwm.supabase.co';
         const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let esModoLogin = false;
+
+        async function verificarSesionExistente() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (user) {
+                window.location.href = "inbox.html";
+            }
+        }
 
         function mostrarAviso(mensaje, tipo = "error") {
             const toast = document.getElementById('toast');
@@ -100,25 +158,32 @@
         function cambiarModo() {
             esModoLogin = !esModoLogin;
             const confirmField = document.getElementById('confirm-container');
-            document.getElementById('auth-title').innerText = esModoLogin ? "Bienvenido de nuevo" : "¡Obtén tus propios mensajes!";
-            document.getElementById('auth-btn').innerText = esModoLogin ? "Entrar" : "Crear mi cuenta";
-            document.getElementById('toggle-btn').innerText = esModoLogin ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Entrar";
-            confirmField.style.display = esModoLogin ? "none" : "block";
+            const userField = document.getElementById('username');
+            
+            // Animación de desvanecimiento suave antes de cambiar texto
+            document.getElementById('auth-section').style.opacity = '0.5';
+            
+            setTimeout(() => {
+                document.getElementById('auth-title').innerText = esModoLogin ? "Bienvenido de nuevo" : "¡Obtén tus propios mensajes!";
+                document.getElementById('auth-btn').innerText = esModoLogin ? "Entrar" : "Crear mi cuenta";
+                document.getElementById('toggle-btn').innerText = esModoLogin ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Entrar";
+                
+                confirmField.style.display = esModoLogin ? "none" : "block";
+                userField.style.display = esModoLogin ? "none" : "block"; 
+                
+                document.getElementById('auth-section').style.opacity = '1';
+            }, 200);
         }
 
         async function manejarAuth() {
             const email = document.getElementById('email').value;
             const emailConfirm = document.getElementById('email-confirm').value;
             const password = document.getElementById('password').value;
+            const userAlias = document.getElementById('username').value.toLowerCase().trim();
             const btn = document.getElementById('auth-btn');
 
-            if (!email || !password || (!esModoLogin && !emailConfirm)) {
+            if (!email || !password || (!esModoLogin && (!emailConfirm || !userAlias))) {
                 mostrarAviso("Por favor, rellena todos los campos.");
-                return;
-            }
-
-            if (!esModoLogin && email !== emailConfirm) {
-                mostrarAviso("¡Los correos no coinciden!");
                 return;
             }
 
@@ -132,37 +197,54 @@
                     btn.disabled = false;
                     btn.innerText = "Entrar";
                 } else {
-                    mostrarPantallaLink(data.user.id);
+                    window.location.href = "inbox.html";
                 }
             } else {
+                if (email !== emailConfirm) {
+                    mostrarAviso("¡Los correos no coinciden!");
+                    btn.disabled = false;
+                    btn.innerText = "Crear mi cuenta";
+                    return;
+                }
                 const { data, error } = await _supabase.auth.signUp({ email, password });
                 if (error) {
                     mostrarAviso("Error: " + error.message);
                     btn.disabled = false;
                     btn.innerText = "Crear mi cuenta";
                 } else {
-                    mostrarAviso("¡Cuenta creada! Ya puedes entrar.", "success");
-                    cambiarModo();
+                    await _supabase.from('perfiles').insert([{ id: data.user.id, username: userAlias }]);
+                    mostrarPantallaLink(userAlias);
+                    mostrarAviso("¡Cuenta creada!", "success");
                     btn.disabled = false;
                 }
             }
         }
 
-        function mostrarPantallaLink(uid) {
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('link-section').style.display = 'block';
-            const link = window.location.origin + "/send.html?u=" + uid;
-            const display = document.getElementById('link-display');
-            display.innerText = link;
-            display.style.display = 'block';
+        function mostrarPantallaLink(alias) {
+            const authSection = document.getElementById('auth-section');
+            const linkSection = document.getElementById('link-section');
+            
+            authSection.style.transform = "translateX(-100px)";
+            authSection.style.opacity = "0";
+            
+            setTimeout(() => {
+                authSection.style.display = 'none';
+                linkSection.style.display = 'block';
+                const link = window.location.origin + "/send.html?u=" + alias;
+                const display = document.getElementById('link-display');
+                display.innerText = link;
+                display.style.display = 'block';
+            }, 300);
         }
 
         function copiarLink() {
             const link = document.getElementById('link-display').innerText;
             navigator.clipboard.writeText(link).then(() => {
-                mostrarAviso("¡Link copiado al portapapeles!", "success");
+                mostrarAviso("¡Link copiado!", "success");
             });
         }
+
+        verificarSesionExistente();
     </script>
 </body>
 </html>

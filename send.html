@@ -18,6 +18,13 @@
             --text-dim: #a0a0a0;
             --error-red: #ff4d4d;
             --success-green: #4ade80;
+            --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* --- KEYFRAMES DE ANIMACIÓN --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         body {
@@ -39,6 +46,7 @@
             text-align: center;
         }
 
+        /* Tarjeta con entrada suave */
         .card {
             background-color: var(--card-bg);
             border-radius: 28px;
@@ -46,6 +54,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 1px solid #333;
             position: relative;
+            animation: fadeInUp 0.8s var(--transition-smooth);
         }
 
         .avatar {
@@ -62,7 +71,11 @@
             background-image: linear-gradient(#222, #222), var(--primary-grad);
             background-origin: border-box;
             background-clip: content-box, border-box;
+            transition: var(--transition-smooth);
         }
+        
+        /* Animación del avatar al pasar el mouse */
+        .card:hover .avatar { transform: scale(1.1) rotate(5deg); }
 
         h2 { font-size: 1.2rem; margin: 10px 0 5px; }
         .hint { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; }
@@ -81,9 +94,9 @@
             resize: none;
             outline: none;
             box-sizing: border-box;
-            transition: border 0.3s;
+            transition: var(--transition-smooth);
         }
-        textarea:focus { border-color: #cc2366; }
+        textarea:focus { border-color: #cc2366; background: #1f1f1f; transform: translateY(-2px); }
 
         .random-btn {
             position: absolute;
@@ -99,9 +112,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.2s;
+            transition: var(--transition-smooth);
         }
-        .random-btn:hover { background: #444; }
+        .random-btn:hover { background: #444; transform: rotate(15deg) scale(1.1); }
 
         .send-btn {
             background: var(--primary-grad);
@@ -114,8 +127,9 @@
             font-size: 1rem;
             margin-top: 20px;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: var(--transition-smooth);
         }
+        .send-btn:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 5px 15px rgba(204, 35, 102, 0.4); }
         .send-btn:active { transform: scale(0.96); }
 
         #toast {
@@ -129,7 +143,7 @@
             font-size: 0.9rem;
             font-weight: 600;
             box-shadow: 0 5px 20px rgba(0,0,0,0.8);
-            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 1000;
             white-space: nowrap;
             border: 1px solid #444;
@@ -142,7 +156,9 @@
             color: #cc2366;
             text-decoration: none;
             font-weight: 600;
+            transition: var(--transition-smooth);
         }
+        .footer-link:hover { color: #f09433; transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -151,7 +167,7 @@
         <div class="card">
             <div class="profile-area">
                 <div class="avatar">👤</div>
-                <h2 id="username-display">@perfil_anonimo</h2>
+                <h2 id="username-display">Cargando...</h2>
                 <p class="hint">Envíame mensajes anónimos...</p>
             </div>
 
@@ -165,13 +181,14 @@
         </div>
     </div>
 
-    <div id="toast">Mensaje enviado</div>
+    <div id="toast">Aviso</div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('u'); 
+        const userAlias = urlParams.get('u'); 
+        let realUserId = null;
 
-        if (!userId) {
+        if (!userAlias) {
             window.location.href = "index.html"; 
         }
 
@@ -179,33 +196,40 @@
         const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+        async function buscarUsuario() {
+            const { data, error } = await _supabase
+                .from('perfiles')
+                .select('id')
+                .eq('username', userAlias)
+                .single();
+
+            if (error || !data) {
+                mostrarAviso("Usuario no encontrado", "error");
+                document.getElementById('username-display').innerText = "Desconocido";
+            } else {
+                realUserId = data.id;
+                document.getElementById('username-display').innerText = "@" + userAlias;
+            }
+        }
+
         function mostrarAviso(mensaje, tipo = "success") {
             const toast = document.getElementById('toast');
             toast.innerText = mensaje;
             toast.style.color = (tipo === "error") ? "var(--error-red)" : "var(--success-green)";
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3500);
+            setTimeout(() => toast.classList.remove('show'), 3500);
         }
 
         function ponerTextoAzar() {
-            const frases = [
-                "¿Quién te gusta?",
-                "Confiesa algo secreto...",
-                "¿Qué piensas de mí?",
-                "Dime algo que nunca me hayas dicho",
-                "¿Texto o Facetime?"
-            ];
-            const random = frases[Math.floor(Math.random() * frases.length)];
-            document.getElementById('msg-input').value = random;
+            const frases = ["¿Quién te gusta?", "Confiesa algo secreto...", "¿Qué piensas de mí?", "Dime algo secreto", "¿Texto o Facetime?"];
+            document.getElementById('msg-input').value = frases[Math.floor(Math.random() * frases.length)];
         }
 
         async function enviarMensaje() {
             const texto = document.getElementById('msg-input').value;
             const btn = document.getElementById('main-btn');
 
-            if (texto.trim() === "") {
+            if (texto.trim() === "" || !realUserId) {
                 mostrarAviso("Escribe algo primero", "error");
                 return;
             }
@@ -215,7 +239,7 @@
 
             const { error } = await _supabase
                 .from('mensajes')
-                .insert([{ para: userId, contenido: texto }]);
+                .insert([{ para: realUserId, contenido: texto }]);
 
             if (error) {
                 mostrarAviso("Error: " + error.message, "error");
@@ -228,6 +252,8 @@
                 btn.disabled = false;
             }
         }
+
+        buscarUsuario();
     </script>
 </body>
 </html>

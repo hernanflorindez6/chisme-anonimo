@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Inbox Pro - Monetizado</title>
+    <title>Mi Inbox Pro - Chisme Anónimo</title>
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2442404022791024" crossorigin="anonymous"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -14,13 +13,13 @@
         :root {
             --bg-color: #000000;
             --card-bg: #121212;
-            --primary-grad: linear-gradient(45deg, #4a148c 0%, #7b1fa2 30%, #c2185b 70%, #d81b60 100%);
+            --primary-grad: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
             --text-main: #ffffff;
             --text-dim: #a0a0a0;
             --money-gold: #ffd700;
+            --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* --- NUEVAS ANIMACIONES CSS --- */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -37,7 +36,7 @@
         .container { 
             width: 100%; 
             max-width: 500px; 
-            animation: fadeInUp 0.8s ease-out; /* Entrada suave del contenedor */
+            animation: fadeInUp 0.8s var(--transition-smooth); 
         }
         
         h1 { font-size: 1.5rem; margin: 20px 0; text-align: center; }
@@ -45,61 +44,59 @@
         .mensaje-card {
             background: var(--card-bg);
             border: 1px solid #333;
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 24px;
+            padding: 25px;
             margin-bottom: 15px;
-            border-left: 5px solid #c2185b;
             display: flex;
             flex-direction: column;
-            opacity: 0; /* Empieza invisible para la cascada */
+            opacity: 0; 
             animation: fadeInUp 0.5s ease-out forwards;
-            transition: transform 0.3s ease;
+            transition: var(--transition-smooth);
         }
 
-        .mensaje-card:hover { transform: scale(1.02); } /* Pequeño pulso al tocarlo */
+        .mensaje-card:hover { transform: scale(1.02); border-color: #cc2366; }
 
-        .contenido { font-size: 1.1rem; font-weight: 500; margin-bottom: 15px; }
+        /* --- MENSAJE CENTRADO E INTERLINEADO 1.5 --- */
+        .contenido { 
+            font-size: 1.15rem; 
+            font-weight: 500; 
+            margin-bottom: 25px; 
+            line-height: 1.5; /* Interlineado tipo Word */
+            text-align: center; /* Texto centrado */
+        }
 
-        .btn-group { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .btn-group { display: flex; flex-direction: column; gap: 12px; }
         
-        .responder-btn, .revelar-btn, .logout-btn { 
-            cursor: pointer; 
-            transition: all 0.3s ease; 
+        .responder-btn { 
+            background: #fff; color: #000; border: none; 
+            padding: 12px; border-radius: 50px; font-weight: bold; 
+            cursor: pointer; transition: var(--transition-smooth);
         }
-
-        .responder-btn:active, .revelar-btn:active { transform: scale(0.95); }
-
-        .responder-btn { background: #fff; color: #000; border: none; padding: 10px; border-radius: 50px; font-weight: bold; width: 100%; }
         
         .revelar-btn {
-            background: none;
-            border: 1px solid var(--money-gold);
-            color: var(--money-gold);
-            padding: 10px;
-            border-radius: 50px;
-            font-weight: bold;
-            width: 100%;
-            font-size: 0.8rem;
+            background: none; border: 1px solid var(--money-gold);
+            color: var(--money-gold); padding: 12px; border-radius: 50px;
+            font-weight: bold; cursor: pointer; font-size: 0.85rem;
+            transition: var(--transition-smooth);
         }
 
-        /* ÁREA DEL LINK RECUPERADO */
+        .revelar-btn:hover { background: rgba(255, 215, 0, 0.1); }
+        .revelar-btn:disabled { border-color: #4ade80; color: #4ade80; cursor: default; }
+
         #link-recuperado {
-            display: none;
-            background: #1a1a1a;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border: 1px dashed var(--money-gold);
-            text-align: center;
-            animation: fadeInUp 0.4s ease-out;
+            display: none; background: #1a1a1a; padding: 20px;
+            border-radius: 20px; margin-bottom: 20px;
+            border: 1px dashed var(--money-gold); text-align: center;
+            animation: fadeInUp 0.4s var(--transition-smooth);
         }
 
-        .logout-btn { background: none; border: 1px solid #444; color: #ff4d4d; padding: 8px 20px; border-radius: 20px; align-self: flex-end; }
+        .logout-btn { background: none; border: 1px solid #444; color: #ff4d4d; padding: 8px 18px; border-radius: 20px; cursor: pointer; }
         
         #share-template { position: absolute; left: -9999px; width: 1080px; height: 1920px; background: #000; display: flex; justify-content: center; align-items: center; }
-        .share-card { background: #121212; width: 800px; border-radius: 60px; text-align: center; border: 2px solid #333; }
-        .share-header { background: var(--primary-grad); color: white; padding: 40px; font-size: 50px; font-weight: bold; }
-        .share-body { padding: 80px 40px; color: #fff; font-size: 60px; font-weight: bold; min-height: 400px; display: flex; align-items: center; justify-content: center; }
+        .share-card { background: #121212; width: 850px; border-radius: 60px; text-align: center; border: 2px solid #333; overflow: hidden; }
+        .share-header { background: var(--primary-grad); color: white; padding: 50px; font-size: 55px; font-weight: bold; }
+        /* Share body centrado también */
+        .share-body { padding: 100px 50px; color: #fff; font-size: 65px; font-weight: bold; min-height: 500px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -108,20 +105,19 @@
         <div class="share-card">
             <div class="share-header">¡Mándame mensajes anónimos!</div>
             <div class="share-body" id="share-text">...</div>
-            <div style="padding-bottom: 40px; color: #888; font-size: 30px; background: #121212;">Sent with ⚡ from TuWeb</div>
+            <div style="padding: 40px; color: #666; font-size: 35px; background: #121212;">chisme-anonimo.vercel.app</div>
         </div>
     </div>
 
     <div class="container">
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 20px; align-items: center;">
-            <button id="btn-mi-link" class="revelar-btn" style="width: auto; padding: 8px 15px; border-radius: 20px; font-size: 0.75rem;" onclick="gestionarLink()">🔗 Mi Link</button>
+            <button class="revelar-btn" style="width: auto; padding: 8px 15px; border-radius: 20px;" onclick="gestionarLink()">🔗 Mi Link</button>
             <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
         </div>
 
         <div id="link-recuperado">
-            <p style="font-size: 0.8rem; color: var(--text-dim); margin: 0 0 10px 0;">Tu enlace para compartir:</p>
-            <code id="texto-link" style="color: var(--money-gold); word-break: break-all; font-size: 0.85rem;"></code>
-            <button class="responder-btn" style="margin-top: 15px; padding: 8px; font-size: 0.8rem;" onclick="copiarLinkRecuperado()">Copiar Enlace</button>
+            <code id="texto-link" style="color: var(--money-gold); word-break: break-all; font-size: 0.9rem;"></code>
+            <button class="responder-btn" style="margin-top: 15px; width: 100%;" onclick="copiarLinkRecuperado()">Copiar Enlace</button>
         </div>
 
         <h1>Mis Mensajes 📥</h1>
@@ -133,10 +129,10 @@
         const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const META_ANUNCIOS = 500; 
+        const META_CLICS = 5000; // META PROTEGIDA
         let miNombreUsuario = "";
 
-        async function verificarYVer() {
+        async function verificarSesion() {
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) window.location.href = "index.html";
             else {
@@ -147,16 +143,9 @@
         }
 
         function gestionarLink() {
-            const yaVisto = localStorage.getItem('ad_link_visto');
-            if (yaVisto === '1') {
-                const areaLink = document.getElementById('link-recuperado');
-                document.getElementById('texto-link').innerText = window.location.origin + "/send.html?u=" + miNombreUsuario;
-                areaLink.style.display = areaLink.style.display === 'none' ? 'block' : 'none';
-            } else {
-                alert("Para recuperar tu link, debes ver 1 anuncio rápido.");
-                localStorage.setItem('ad_link_visto', '1');
-                location.reload(); 
-            }
+            const areaLink = document.getElementById('link-recuperado');
+            document.getElementById('texto-link').innerText = window.location.origin + "/send.html?u=" + miNombreUsuario;
+            areaLink.style.display = areaLink.style.display === 'none' ? 'block' : 'none';
         }
 
         function copiarLinkRecuperado() {
@@ -164,40 +153,39 @@
             alert("¡Link copiado!");
         }
 
-        function verAnuncio(msgId) {
+        function contarClic(msgId, btn) {
             let storageKey = `ads_${msgId}`;
             let vistos = parseInt(localStorage.getItem(storageKey)) || 0;
-            if (vistos < META_ANUNCIOS) {
+            if (vistos < META_CLICS) {
                 vistos++;
                 localStorage.setItem(storageKey, vistos);
-                alert(`Progreso: ${vistos}/${META_ANUNCIOS}`);
-                location.reload(); 
+                if (vistos >= META_CLICS) {
+                    btn.innerText = "✨ Meta alcanzada - Recompensa pronto";
+                    btn.disabled = true;
+                } else {
+                    btn.innerText = `🔍 ¿Quién envió esto? (${vistos}/${META_CLICS})`;
+                }
             }
         }
 
         async function cargarMensajes(uid) {
-            const { data, error } = await _supabase.from('mensajes').select('*').eq('para', uid).order('created_at', { ascending: false });
+            const { data, error } = await _supabase.from('mensajes').select('*').eq('para', uid).order('creado_el', { ascending: false });
             const listado = document.getElementById('lista-mensajes');
-            if (error || data.length === 0) { listado.innerHTML = "<p>No hay mensajes todavía.</p>"; return; }
+            if (error || data.length === 0) { listado.innerHTML = "<p style='text-align:center; color:#666;'>No hay mensajes todavía.</p>"; return; }
 
             listado.innerHTML = "";
             data.forEach((msg, index) => {
                 let vistos = parseInt(localStorage.getItem(`ads_${msg.id}`)) || 0;
                 const card = document.createElement('div');
                 card.className = 'mensaje-card';
-                // EFECTO CASCADA: cada mensaje tarda 0.1s más que el anterior en aparecer
                 card.style.animationDelay = `${index * 0.1}s`; 
-                
                 card.innerHTML = `
                     <div class="contenido">${msg.contenido}</div>
                     <div class="btn-group">
                         <button class="responder-btn" onclick="prepararRespuesta('${msg.contenido.replace(/'/g, "\\'")}')">📷 Responder</button>
-                        <button class="revelar-btn" onclick="verAnuncio('${msg.id}')">
-                            ${vistos >= META_ANUNCIOS ? '✅ Revelar Pista' : `🔍 ¿Quién envió esto? (${vistos}/${META_ANUNCIOS})`}
+                        <button class="revelar-btn" onclick="contarClic('${msg.id}', this)" ${vistos >= META_CLICS ? 'disabled' : ''}>
+                            ${vistos >= META_CLICS ? '✨ Meta alcanzada - Recompensa pronto' : `🔍 ¿Quién envió esto? (${vistos}/${META_CLICS})`}
                         </button>
-                        <div class="pista-area" id="pista-${msg.id}" style="${vistos >= META_ANUNCIOS ? 'display:block' : ''}">
-                            <b>PISTA:</b> Enviado desde un dispositivo en tu ciudad o cercanías.
-                        </div>
                     </div>
                 `;
                 listado.appendChild(card);
@@ -216,7 +204,7 @@
         }
 
         async function cerrarSesion() { await _supabase.auth.signOut(); window.location.href = "index.html"; }
-        verificarYVer();
+        verificarSesion();
     </script>
 </body>
 </html>

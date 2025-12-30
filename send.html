@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Mensaje Anónimo</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #121212;
+            --primary-grad: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+            --error-red: #ff4d4d;
+            --success-green: #4ade80;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 28px;
+            padding: 30px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            position: relative;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background: #222;
+            border-radius: 50%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border: 3px solid transparent;
+            background-image: linear-gradient(#222, #222), var(--primary-grad);
+            background-origin: border-box;
+            background-clip: content-box, border-box;
+        }
+
+        h2 { font-size: 1.2rem; margin: 10px 0 5px; }
+        .hint { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; }
+
+        .input-container { position: relative; }
+
+        textarea {
+            width: 100%;
+            height: 140px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: white;
+            padding: 15px;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            box-sizing: border-box;
+            transition: border 0.3s;
+        }
+        textarea:focus { border-color: #cc2366; }
+
+        .random-btn {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            background: #333;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .random-btn:hover { background: #444; }
+
+        .send-btn {
+            background: var(--primary-grad);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .send-btn:active { transform: scale(0.96); }
+
+        /* ESTILO DEL AVISO PROFESIONAL (Toast) */
+        #toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #222;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            white-space: nowrap;
+            border: 1px solid #444;
+        }
+        #toast.show { bottom: 40px; }
+
+        .footer-link {
+            display: block;
+            margin-top: 25px;
+            color: #cc2366;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <div class="profile-area">
+                <div class="avatar">👤</div>
+                <h2 id="username-display">@perfil_anonimo</h2>
+                <p class="hint">Envíame mensajes anónimos...</p>
+            </div>
+
+            <div class="input-container">
+                <textarea id="msg-input" placeholder="Escribe algo aquí..."></textarea>
+                <button class="random-btn" onclick="ponerTextoAzar()" title="Mensaje al azar">🎲</button>
+            </div>
+
+            <button id="main-btn" class="send-btn" onclick="enviarMensaje()">Enviar mensaje</button>
+            <a href="index.html" class="footer-link">¡Crea tu propio link gratis!</a>
+        </div>
+    </div>
+
+    <div id="toast">Mensaje enviado</div>
+
+    <script>
+        // 1. REDIRECCIÓN SI NO HAY USUARIO
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('u'); 
+
+        if (!userId) {
+            window.location.href = "index.html"; 
+        }
+
+        // 2. CONFIGURACIÓN SUPABASE
+        const supabaseUrl = 'https://wfnhkuilbtomvtijsiwm.supabase.co';
+        const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 3. FUNCIÓN DE AVISO (TOAST)
+        function mostrarAviso(mensaje, tipo = "success") {
+            const toast = document.getElementById('toast');
+            toast.innerText = mensaje;
+            toast.style.color = (tipo === "error") ? "var(--error-red)" : "var(--success-green)";
+            
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // 4. MENSAJE AL AZAR (Estilo NGL)
+        function ponerTextoAzar() {
+            const frases = [
+                "¿Quién te gusta?",
+                "Confiesa algo secreto...",
+                "¿Qué piensas de mí?",
+                "Dime algo que nunca me hayas dicho",
+                "¿Texto o Facetime?"
+            ];
+            const random = frases[Math.floor(Math.random() * frases.length)];
+            document.getElementById('msg-input').value = random;
+        }
+
+        // 5. ENVIAR A LA TABLA
+        async function enviarMensaje() {
+            const texto = document.getElementById('msg-input').value;
+            const btn = document.getElementById('main-btn');
+
+            if (texto.trim() === "") {
+                mostrarAviso("Escribe algo primero", "error");
+                return;
+            }
+
+            btn.innerText = "Enviando...";
+            btn.disabled = true;
+
+            const { error } = await _supabase
+                .from('mensajes')
+                .insert([{ para: userId, contenido: texto }]);
+
+            if (error) {
+                mostrarAviso("Error: " + error.message, "error");
+                btn.disabled = false;
+                btn.innerText = "Reintentar";
+            } else {
+                mostrarAviso("¡Enviado con éxito! 🚀", "success");
+                document.getElementById('msg-input').value = "";
+                btn.innerText = "Enviar otro";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -112,12 +112,13 @@
             transition: var(--transition-smooth);
         }
 
-        /* CORRECCIÓN: Quitamos el hueco grande para que en modo invisible no se vea raro */
+        /* En modo invisible, ocultamos el contenedor pero lo dejamos existir en el DOM */
         .captcha-container {
-            margin: 5px 0;
+            margin: 0;
             display: flex;
             justify-content: center;
-            /* min-height: 65px; <- ELIMINADO PARA MODO INVISIBLE */
+            height: 0;
+            overflow: hidden; 
         }
 
         .send-btn {
@@ -131,7 +132,7 @@
             font-size: 1rem;
             cursor: pointer;
             transition: var(--transition-smooth);
-            margin-top: 10px;
+            margin-top: 15px;
         }
         .send-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
 
@@ -218,6 +219,10 @@
             const toast = document.getElementById('toast');
             toast.innerText = mensaje;
             toast.style.color = (tipo === "error") ? "var(--error-red)" : "var(--success-green)";
+            // Si es un mensaje de "reintento", lo ponemos amarillo o blanco para que no parezca error grave
+            if (mensaje.includes("🔄")) {
+                 toast.style.color = "#ffd700"; 
+            }
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3500);
         }
@@ -232,13 +237,18 @@
             const texto = msgInput.value;
             const btn = document.getElementById('main-btn');
 
-            // 1. CAPTCHA SEGURO (Modificado para Invisible)
-            // El '?' evita errores si el widget no ha cargado aún
+            // --- LÓGICA DE REPARACIÓN AUTOMÁTICA ---
+            // Buscamos si Cloudflare ya nos dio permiso (token)
             const captchaResponse = document.querySelector('[name="cf-turnstile-response"]')?.value;
-            
-            // Si eres un bot, Cloudflare no te da el token y entras aquí
+
             if (!captchaResponse) {
-                mostrarAviso("Seguridad activada: Recarga la página", "error");
+                // Si está vacío, no te regañamos. Reiniciamos el sistema y te pedimos otro clic.
+                mostrarAviso("🔄 Verificando seguridad... dale clic otra vez", "error");
+                
+                if (typeof turnstile !== "undefined") {
+                    console.log("Reiniciando Turnstile...");
+                    turnstile.reset(); // ESTO REINICIA EL CHECK INVISIBLE
+                }
                 return;
             }
 
@@ -277,6 +287,8 @@
                 charCount.innerText = "0 / 400";
                 btn.innerText = "Enviar otro";
                 btn.disabled = false;
+                
+                // Reiniciamos el token invisible para el siguiente mensaje
                 if (typeof turnstile !== "undefined") turnstile.reset();
             }
         }

@@ -7,6 +7,7 @@
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2442404022791024" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
     <style>
         :root {
@@ -35,14 +36,9 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            overflow-x: hidden;
         }
 
-        .container {
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
+        .container { width: 100%; max-width: 400px; text-align: center; }
 
         .card {
             background-color: var(--card-bg);
@@ -50,16 +46,14 @@
             padding: 30px 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 1px solid #333;
-            position: relative;
             animation: fadeInUp 0.8s var(--transition-smooth);
         }
 
         .avatar {
-            width: 80px;
-            height: 80px;
+            width: 80px; height: 80px;
             background: #222;
             border-radius: 50%;
-            margin: 0 auto;
+            margin: 0 auto 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -68,49 +62,62 @@
             background-image: linear-gradient(#222, #222), var(--primary-grad);
             background-origin: border-box;
             background-clip: content-box, border-box;
-            transition: var(--transition-smooth);
         }
-        
-        .card:hover .avatar { transform: scale(1.1) rotate(5deg); }
 
-        h2 { font-size: 1.2rem; margin: 10px 0 5px; }
+        h2 { font-size: 1.2rem; margin: 5px 0; }
         .hint { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; }
 
-        .input-container { position: relative; }
+        .input-container { position: relative; margin-bottom: 10px; }
 
         textarea {
             width: 100%;
-            height: 140px;
+            height: 150px;
             background: #1a1a1a;
             border: 1px solid #333;
             border-radius: 20px;
             color: white;
             padding: 15px;
+            padding-bottom: 35px; /* Espacio para el contador */
             font-size: 1rem;
             resize: none;
             outline: none;
             box-sizing: border-box;
             transition: var(--transition-smooth);
         }
-        textarea:focus { border-color: #cc2366; background: #1f1f1f; transform: translateY(-2px); }
+        textarea:focus { border-color: #cc2366; background: #1f1f1f; }
+
+        /* Estilo del contador de caracteres */
+        .char-counter {
+            position: absolute;
+            left: 15px;
+            bottom: 12px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            pointer-events: none;
+        }
 
         .random-btn {
             position: absolute;
-            right: 15px;
-            bottom: 15px;
+            right: 12px;
+            bottom: 8px;
             background: #333;
             border: none;
             border-radius: 50%;
-            width: 35px;
-            height: 35px;
+            width: 32px;
+            height: 32px;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: var(--transition-smooth);
         }
-        .random-btn:hover { background: #444; transform: rotate(15deg) scale(1.1); }
+
+        .captcha-container {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+        }
 
         .send-btn {
             background: var(--primary-grad);
@@ -121,13 +128,10 @@
             border-radius: 40px;
             font-weight: bold;
             font-size: 1rem;
-            margin-top: 20px;
             cursor: pointer;
             transition: var(--transition-smooth);
         }
-        .send-btn:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 5px 15px rgba(204, 35, 102, 0.4); }
-        .send-btn:active:not(:disabled) { transform: scale(0.96); }
-        .send-btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
 
         #toast {
             position: fixed;
@@ -138,11 +142,9 @@
             padding: 12px 25px;
             border-radius: 50px;
             font-size: 0.9rem;
-            font-weight: 600;
             box-shadow: 0 5px 20px rgba(0,0,0,0.8);
             transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 1000;
-            white-space: nowrap;
             border: 1px solid #444;
         }
         #toast.show { bottom: 40px; }
@@ -153,24 +155,25 @@
             color: #cc2366;
             text-decoration: none;
             font-weight: 600;
-            transition: var(--transition-smooth);
         }
-        .footer-link:hover { color: #f09433; transform: scale(1.05); }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="card">
-            <div class="profile-area">
-                <div class="avatar">👤</div>
-                <h2 id="username-display">Cargando...</h2>
-                <p class="hint">Envíame mensajes anónimos...</p>
-            </div>
+            <div class="avatar">👤</div>
+            <h2 id="username-display">Cargando...</h2>
+            <p class="hint">Envíame mensajes anónimos...</p>
 
             <div class="input-container">
-                <textarea id="msg-input" placeholder="Escribe algo aquí..."></textarea>
-                <button class="random-btn" onclick="ponerTextoAzar()" title="Mensaje al azar">🎲</button>
+                <textarea id="msg-input" maxlength="400" placeholder="Escribe algo aquí..."></textarea>
+                <div id="char-count" class="char-counter">0 / 400</div>
+                <button class="random-btn" onclick="ponerTextoAzar()">🎲</button>
+            </div>
+
+            <div class="captcha-container">
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAAACJ2__pbpp2xLHE2" data-theme="dark"></div>
             </div>
 
             <button id="main-btn" class="send-btn" onclick="enviarMensaje()">Enviar mensaje</button>
@@ -187,17 +190,20 @@
 
         if (!userAlias) { window.location.href = "index.html"; }
 
-        const supabaseUrl = 'https://wfnhkuilbtomvtijsiwm.supabase.co';
-        const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const _supabase = supabase.createClient('https://wfnhkuilbtomvtijsiwm.supabase.co', 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5');
+
+        // Actualizar contador de caracteres en tiempo real
+        const msgInput = document.getElementById('msg-input');
+        const charCount = document.getElementById('char-count');
+
+        msgInput.addEventListener('input', () => {
+            const currentLength = msgInput.value.length;
+            charCount.innerText = `${currentLength} / 400`;
+            charCount.style.color = currentLength >= 400 ? "var(--error-red)" : "var(--text-dim)";
+        });
 
         async function buscarUsuario() {
-            const { data, error } = await _supabase
-                .from('perfiles')
-                .select('id')
-                .eq('username', userAlias)
-                .single();
-
+            const { data, error } = await _supabase.from('perfiles').select('id').eq('username', userAlias).single();
             if (error || !data) {
                 mostrarAviso("Usuario no encontrado", "error");
                 document.getElementById('username-display').innerText = "Desconocido";
@@ -217,22 +223,27 @@
 
         function ponerTextoAzar() {
             const frases = ["¿Quién te gusta?", "Confiesa algo secreto...", "¿Qué piensas de mí?", "Dime algo secreto", "¿Texto o Facetime?"];
-            document.getElementById('msg-input').value = frases[Math.floor(Math.random() * frases.length)];
+            msgInput.value = frases[Math.floor(Math.random() * frases.length)];
+            msgInput.dispatchEvent(new Event('input')); // Forzar actualización del contador
         }
 
-        // --- LÓGICA ANTI-SPAM IMPLEMENTADA ---
         async function enviarMensaje() {
-            const texto = document.getElementById('msg-input').value;
+            const texto = msgInput.value;
             const btn = document.getElementById('main-btn');
 
-            // 1. Verificar Cooldown (60 segundos)
+            // 1. CAPTCHA
+            const captchaResponse = document.querySelector('[name="cf-turnstile-response"]').value;
+            if (!captchaResponse) {
+                mostrarAviso("Confirma que no eres un robot", "error");
+                return;
+            }
+
+            // 2. Cooldown (60s)
             const ahora = Date.now();
             const ultimoEnvio = localStorage.getItem('ultimo_envio_timestamp');
-            const TIEMPO_ESPERA = 60000; 
-
-            if (ultimoEnvio && (ahora - ultimoEnvio < TIEMPO_ESPERA)) {
-                const restante = Math.ceil((TIEMPO_ESPERA - (ahora - ultimoEnvio)) / 1000);
-                mostrarAviso(`¡Espera! Faltan ${restante}s para otro mensaje.`, "error");
+            if (ultimoEnvio && (ahora - ultimoEnvio < 60000)) {
+                const restante = Math.ceil((60000 - (ahora - ultimoEnvio)) / 1000);
+                mostrarAviso(`Espera ${restante}s para otro mensaje`, "error");
                 return;
             }
 
@@ -241,25 +252,29 @@
                 return;
             }
 
+            // 3. Validación de longitud final
+            if (texto.length > 400) {
+                mostrarAviso("Mensaje demasiado largo", "error");
+                return;
+            }
+
             btn.innerText = "Enviando...";
             btn.disabled = true;
 
-            const { error } = await _supabase
-                .from('mensajes')
-                .insert([{ para: realUserId, contenido: texto }]);
+            const { error } = await _supabase.from('mensajes').insert([{ para: realUserId, contenido: texto }]);
 
             if (error) {
                 mostrarAviso("Error al enviar", "error");
                 btn.disabled = false;
                 btn.innerText = "Reintentar";
             } else {
-                // 2. Guardar timestamp del éxito
                 localStorage.setItem('ultimo_envio_timestamp', Date.now());
-                
                 mostrarAviso("¡Enviado con éxito! 🚀", "success");
-                document.getElementById('msg-input').value = "";
+                msgInput.value = "";
+                charCount.innerText = "0 / 400";
                 btn.innerText = "Enviar otro";
                 btn.disabled = false;
+                if (typeof turnstile !== "undefined") turnstile.reset();
             }
         }
 

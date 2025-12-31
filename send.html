@@ -62,7 +62,13 @@
             background-clip: content-box, border-box;
         }
 
-        h2 { font-size: 1.2rem; margin: 5px 0; }
+        h2 { 
+            font-size: 1.2rem; 
+            margin: 5px 0; 
+            font-weight: 700;
+            /* NO ponemos text-transform para que respete si es Mayúscula o Minúscula */
+        }
+        
         .hint { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; }
 
         .input-container { position: relative; margin-bottom: 10px; }
@@ -121,7 +127,7 @@
             font-size: 1rem;
             cursor: pointer;
             transition: var(--transition-smooth);
-            margin-top: 20px; /* Más espacio ahora que no hay captcha */
+            margin-top: 20px;
         }
         .send-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
 
@@ -149,7 +155,8 @@
             font-weight: 600;
         }
 
-        /* ESTILO PARA LA TRAMPA INVISIBLE */
+        /* ESTILO PARA LA TRAMPA INVISIBLE (HONEYPOT) */
+        /* Oculto para humanos, visible para bots */
         .honey-pot {
             opacity: 0;
             position: absolute;
@@ -186,6 +193,8 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
+        // IMPORTANTE: urlParams.get decodifica automáticamente los %20 a espacios
+        // Si el link es ...?u=FH%20PRODUCCIONES -> userAlias será "FH PRODUCCIONES"
         const userAlias = urlParams.get('u'); 
         let realUserId = null;
 
@@ -203,12 +212,16 @@
         });
 
         async function buscarUsuario() {
+            // Buscamos el usuario en la base de datos
+            // Debe coincidir exactamente (Supabase distingue mayúsculas/minúsculas en texto normal)
             const { data, error } = await _supabase.from('perfiles').select('id').eq('username', userAlias).single();
+            
             if (error || !data) {
                 mostrarAviso("Usuario no encontrado", "error");
                 document.getElementById('username-display').innerText = "Desconocido";
             } else {
                 realUserId = data.id;
+                // Mostramos el nombre bonito con el @
                 document.getElementById('username-display').innerText = "@" + userAlias;
             }
         }
@@ -235,7 +248,7 @@
             // Si el campo invisible tiene texto, es un bot.
             const trampa = document.getElementById('website-url').value;
             if (trampa !== "") {
-                // Engañamos al bot diciéndole que se envió, pero NO hacemos nada.
+                // Le mentimos al bot diciendo que se envió
                 mostrarAviso("¡Enviado con éxito! 🚀", "success");
                 msgInput.value = "";
                 return; 

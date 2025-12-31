@@ -109,7 +109,7 @@
             <h1 id="auth-title">¡Obtén tus propios mensajes!</h1>
             <p id="auth-desc">Regístrate para crear tu link anónimo.</p>
             
-            <input type="text" id="username" placeholder="Elige tu nombre de usuario (ej: hernan)">
+            <input type="text" id="username" placeholder="Elige tu nombre de usuario (ej: FH PRODUCCIONES)">
             
             <input type="email" id="email" placeholder="Tu correo electrónico">
             <div id="confirm-container">
@@ -160,7 +160,6 @@
             const confirmField = document.getElementById('confirm-container');
             const userField = document.getElementById('username');
             
-            // Animación de desvanecimiento suave antes de cambiar texto
             document.getElementById('auth-section').style.opacity = '0.5';
             
             setTimeout(() => {
@@ -179,8 +178,15 @@
             const email = document.getElementById('email').value;
             const emailConfirm = document.getElementById('email-confirm').value;
             const password = document.getElementById('password').value;
-            const userAlias = document.getElementById('username').value.toLowerCase().trim();
             const btn = document.getElementById('auth-btn');
+
+            // --- LÓGICA CORREGIDA PARA RESPETAR MAYÚSCULAS Y ESPACIOS ---
+            const rawUser = document.getElementById('username').value;
+            
+            // Reemplazamos SOLO los símbolos problemáticos (&, ?, #, etc)
+            // PERMITIMOS espacios, mayúsculas, minúsculas y números.
+            // NO usamos .toLowerCase() para respetar tu escritura.
+            const userAlias = rawUser.replace(/[&?#=/\\%]/g, '').trim();
 
             if (!email || !password || (!esModoLogin && (!emailConfirm || !userAlias))) {
                 mostrarAviso("Por favor, rellena todos los campos.");
@@ -212,6 +218,7 @@
                     btn.disabled = false;
                     btn.innerText = "Crear mi cuenta";
                 } else {
+                    // Guardamos el usuario TAL CUAL (ej: "FH PRODUCCIONES")
                     await _supabase.from('perfiles').insert([{ id: data.user.id, username: userAlias }]);
                     mostrarPantallaLink(userAlias);
                     mostrarAviso("¡Cuenta creada!", "success");
@@ -230,7 +237,11 @@
             setTimeout(() => {
                 authSection.style.display = 'none';
                 linkSection.style.display = 'block';
-                const link = window.location.origin + "/send.html?u=" + alias;
+                
+                // encodeURIComponent es la clave: Convierte "FH PRODUCCIONES" en "FH%20PRODUCCIONES"
+                // Así el link NO se rompe por el espacio.
+                const link = window.location.origin + "/send.html?u=" + encodeURIComponent(alias);
+                
                 const display = document.getElementById('link-display');
                 display.innerText = link;
                 display.style.display = 'block';

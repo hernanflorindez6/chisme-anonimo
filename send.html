@@ -6,7 +6,6 @@
     <title>Enviar Mensaje Anónimo</title>
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2442404022791024" crossorigin="anonymous"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -21,7 +20,6 @@
             --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* --- KEYFRAMES DE ANIMACIÓN --- */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -46,7 +44,6 @@
             text-align: center;
         }
 
-        /* Tarjeta con entrada suave */
         .card {
             background-color: var(--card-bg);
             border-radius: 28px;
@@ -74,7 +71,6 @@
             transition: var(--transition-smooth);
         }
         
-        /* Animación del avatar al pasar el mouse */
         .card:hover .avatar { transform: scale(1.1) rotate(5deg); }
 
         h2 { font-size: 1.2rem; margin: 10px 0 5px; }
@@ -129,8 +125,9 @@
             cursor: pointer;
             transition: var(--transition-smooth);
         }
-        .send-btn:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 5px 15px rgba(204, 35, 102, 0.4); }
-        .send-btn:active { transform: scale(0.96); }
+        .send-btn:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 5px 15px rgba(204, 35, 102, 0.4); }
+        .send-btn:active:not(:disabled) { transform: scale(0.96); }
+        .send-btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
 
         #toast {
             position: fixed;
@@ -188,9 +185,7 @@
         const userAlias = urlParams.get('u'); 
         let realUserId = null;
 
-        if (!userAlias) {
-            window.location.href = "index.html"; 
-        }
+        if (!userAlias) { window.location.href = "index.html"; }
 
         const supabaseUrl = 'https://wfnhkuilbtomvtijsiwm.supabase.co';
         const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5';
@@ -225,9 +220,21 @@
             document.getElementById('msg-input').value = frases[Math.floor(Math.random() * frases.length)];
         }
 
+        // --- LÓGICA ANTI-SPAM IMPLEMENTADA ---
         async function enviarMensaje() {
             const texto = document.getElementById('msg-input').value;
             const btn = document.getElementById('main-btn');
+
+            // 1. Verificar Cooldown (60 segundos)
+            const ahora = Date.now();
+            const ultimoEnvio = localStorage.getItem('ultimo_envio_timestamp');
+            const TIEMPO_ESPERA = 60000; 
+
+            if (ultimoEnvio && (ahora - ultimoEnvio < TIEMPO_ESPERA)) {
+                const restante = Math.ceil((TIEMPO_ESPERA - (ahora - ultimoEnvio)) / 1000);
+                mostrarAviso(`¡Espera! Faltan ${restante}s para otro mensaje.`, "error");
+                return;
+            }
 
             if (texto.trim() === "" || !realUserId) {
                 mostrarAviso("Escribe algo primero", "error");
@@ -242,10 +249,13 @@
                 .insert([{ para: realUserId, contenido: texto }]);
 
             if (error) {
-                mostrarAviso("Error: " + error.message, "error");
+                mostrarAviso("Error al enviar", "error");
                 btn.disabled = false;
                 btn.innerText = "Reintentar";
             } else {
+                // 2. Guardar timestamp del éxito
+                localStorage.setItem('ultimo_envio_timestamp', Date.now());
+                
                 mostrarAviso("¡Enviado con éxito! 🚀", "success");
                 document.getElementById('msg-input').value = "";
                 btn.innerText = "Enviar otro";

@@ -7,8 +7,6 @@
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2442404022791024" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
     <style>
         :root {
             --bg-color: #000000;
@@ -112,15 +110,6 @@
             transition: var(--transition-smooth);
         }
 
-        /* En modo invisible, ocultamos el contenedor pero lo dejamos existir en el DOM */
-        .captcha-container {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            height: 0;
-            overflow: hidden; 
-        }
-
         .send-btn {
             background: var(--primary-grad);
             color: white;
@@ -132,7 +121,7 @@
             font-size: 1rem;
             cursor: pointer;
             transition: var(--transition-smooth);
-            margin-top: 15px;
+            margin-top: 20px; /* Más espacio ahora que no hay captcha */
         }
         .send-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
 
@@ -159,6 +148,17 @@
             text-decoration: none;
             font-weight: 600;
         }
+
+        /* ESTILO PARA LA TRAMPA INVISIBLE */
+        .honey-pot {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 0;
+            width: 0;
+            z-index: -1;
+        }
     </style>
 </head>
 <body>
@@ -175,9 +175,7 @@
                 <button class="random-btn" onclick="ponerTextoAzar()">🎲</button>
             </div>
 
-            <div class="captcha-container">
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAAACJ2__pbpp2xLHE2" data-theme="dark"></div>
-            </div>
+            <input type="text" id="website-url" class="honey-pot" autocomplete="off" tabindex="-1">
 
             <button id="main-btn" class="send-btn" onclick="enviarMensaje()">Enviar mensaje</button>
             <a href="index.html" class="footer-link">¡Crea tu propio link gratis!</a>
@@ -219,10 +217,6 @@
             const toast = document.getElementById('toast');
             toast.innerText = mensaje;
             toast.style.color = (tipo === "error") ? "var(--error-red)" : "var(--success-green)";
-            // Si es un mensaje de "reintento", lo ponemos amarillo o blanco para que no parezca error grave
-            if (mensaje.includes("🔄")) {
-                 toast.style.color = "#ffd700"; 
-            }
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3500);
         }
@@ -237,30 +231,17 @@
             const texto = msgInput.value;
             const btn = document.getElementById('main-btn');
 
-            // --- LÓGICA DE REPARACIÓN AUTOMÁTICA ---
-            // Buscamos si Cloudflare ya nos dio permiso (token)
-            const captchaResponse = document.querySelector('[name="cf-turnstile-response"]')?.value;
-
-            if (!captchaResponse) {
-                // Si está vacío, no te regañamos. Reiniciamos el sistema y te pedimos otro clic.
-                mostrarAviso("🔄 Verificando seguridad... dale clic otra vez", "error");
-                
-                if (typeof turnstile !== "undefined") {
-                    console.log("Reiniciando Turnstile...");
-                    turnstile.reset(); // ESTO REINICIA EL CHECK INVISIBLE
-                }
-                return;
+            // --- 1. DEFENSA HONEYPOT (TRAMPA) ---
+            // Si el campo invisible tiene texto, es un bot.
+            const trampa = document.getElementById('website-url').value;
+            if (trampa !== "") {
+                // Engañamos al bot diciéndole que se envió, pero NO hacemos nada.
+                mostrarAviso("¡Enviado con éxito! 🚀", "success");
+                msgInput.value = "";
+                return; 
             }
 
-            // 2. Cooldown
-            const ahora = Date.now();
-            const ultimoEnvio = localStorage.getItem('ultimo_envio_timestamp');
-            if (ultimoEnvio && (ahora - ultimoEnvio < 60000)) {
-                const restante = Math.ceil((60000 - (ahora - ultimoEnvio)) / 1000);
-                mostrarAviso(`Espera ${restante}s para otro mensaje`, "error");
-                return;
-            }
-
+            // --- 2. VALIDACIONES BÁSICAS ---
             if (texto.trim() === "" || !realUserId) {
                 mostrarAviso("Escribe algo primero", "error");
                 return;
@@ -271,6 +252,18 @@
                 return;
             }
 
+            // --- 3. COOLDOWN (60s) ---
+            const ahora = Date.now();
+            const ultimoEnvio = localStorage.getItem('ultimo_envio_timestamp');
+            const TIEMPO_ESPERA = 60000; 
+
+            if (ultimoEnvio && (ahora - ultimoEnvio < TIEMPO_ESPERA)) {
+                const restante = Math.ceil((TIEMPO_ESPERA - (ahora - ultimoEnvio)) / 1000);
+                mostrarAviso(`Espera ${restante}s para otro mensaje`, "error");
+                return;
+            }
+
+            // --- 4. ENVÍO DIRECTO ---
             btn.innerText = "Enviando...";
             btn.disabled = true;
 
@@ -287,9 +280,6 @@
                 charCount.innerText = "0 / 400";
                 btn.innerText = "Enviar otro";
                 btn.disabled = false;
-                
-                // Reiniciamos el token invisible para el siguiente mensaje
-                if (typeof turnstile !== "undefined") turnstile.reset();
             }
         }
 

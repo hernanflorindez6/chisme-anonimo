@@ -238,9 +238,10 @@
                 authSection.style.display = 'none';
                 linkSection.style.display = 'block';
                 
-                // encodeURIComponent es la clave: Convierte "FH PRODUCCIONES" en "FH%20PRODUCCIONES"
-                // Así el link NO se rompe por el espacio.
-                const link = window.location.origin + "/send.html?u=" + encodeURIComponent(alias);
+                // --- CAMBIO CLAVE PARA LINK CORTO ---
+                // Quitamos "/send.html?u=" y dejamos solo "/"
+                // encodeURIComponent convierte espacios en %20 para que no se rompa
+                const link = window.location.origin + "/" + encodeURIComponent(alias);
                 
                 const display = document.getElementById('link-display');
                 display.innerText = link;

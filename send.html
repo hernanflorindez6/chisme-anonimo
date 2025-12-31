@@ -77,7 +77,7 @@
             border-radius: 20px;
             color: white;
             padding: 15px;
-            padding-bottom: 35px; /* Espacio para el contador */
+            padding-bottom: 35px;
             font-size: 1rem;
             resize: none;
             outline: none;
@@ -86,7 +86,6 @@
         }
         textarea:focus { border-color: #cc2366; background: #1f1f1f; }
 
-        /* Estilo del contador de caracteres */
         .char-counter {
             position: absolute;
             left: 15px;
@@ -117,6 +116,7 @@
             margin: 15px 0;
             display: flex;
             justify-content: center;
+            min-height: 65px;
         }
 
         .send-btn {
@@ -192,7 +192,6 @@
 
         const _supabase = supabase.createClient('https://wfnhkuilbtomvtijsiwm.supabase.co', 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5');
 
-        // Actualizar contador de caracteres en tiempo real
         const msgInput = document.getElementById('msg-input');
         const charCount = document.getElementById('char-count');
 
@@ -224,21 +223,21 @@
         function ponerTextoAzar() {
             const frases = ["¿Quién te gusta?", "Confiesa algo secreto...", "¿Qué piensas de mí?", "Dime algo secreto", "¿Texto o Facetime?"];
             msgInput.value = frases[Math.floor(Math.random() * frases.length)];
-            msgInput.dispatchEvent(new Event('input')); // Forzar actualización del contador
+            msgInput.dispatchEvent(new Event('input')); 
         }
 
         async function enviarMensaje() {
             const texto = msgInput.value;
             const btn = document.getElementById('main-btn');
 
-            // 1. CAPTCHA
+            // 1. CAPTCHA - Validación
             const captchaResponse = document.querySelector('[name="cf-turnstile-response"]').value;
             if (!captchaResponse) {
                 mostrarAviso("Confirma que no eres un robot", "error");
                 return;
             }
 
-            // 2. Cooldown (60s)
+            // 2. Cooldown
             const ahora = Date.now();
             const ultimoEnvio = localStorage.getItem('ultimo_envio_timestamp');
             if (ultimoEnvio && (ahora - ultimoEnvio < 60000)) {
@@ -252,7 +251,6 @@
                 return;
             }
 
-            // 3. Validación de longitud final
             if (texto.length > 400) {
                 mostrarAviso("Mensaje demasiado largo", "error");
                 return;

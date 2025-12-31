@@ -112,11 +112,12 @@
             transition: var(--transition-smooth);
         }
 
+        /* CORRECCIÓN: Quitamos el hueco grande para que en modo invisible no se vea raro */
         .captcha-container {
-            margin: 15px 0;
+            margin: 5px 0;
             display: flex;
             justify-content: center;
-            min-height: 65px;
+            /* min-height: 65px; <- ELIMINADO PARA MODO INVISIBLE */
         }
 
         .send-btn {
@@ -130,6 +131,7 @@
             font-size: 1rem;
             cursor: pointer;
             transition: var(--transition-smooth);
+            margin-top: 10px;
         }
         .send-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
 
@@ -230,10 +232,13 @@
             const texto = msgInput.value;
             const btn = document.getElementById('main-btn');
 
-            // 1. CAPTCHA - Validación
-            const captchaResponse = document.querySelector('[name="cf-turnstile-response"]').value;
+            // 1. CAPTCHA SEGURO (Modificado para Invisible)
+            // El '?' evita errores si el widget no ha cargado aún
+            const captchaResponse = document.querySelector('[name="cf-turnstile-response"]')?.value;
+            
+            // Si eres un bot, Cloudflare no te da el token y entras aquí
             if (!captchaResponse) {
-                mostrarAviso("Confirma que no eres un robot", "error");
+                mostrarAviso("Seguridad activada: Recarga la página", "error");
                 return;
             }
 

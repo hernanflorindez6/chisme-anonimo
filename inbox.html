@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Inbox Pro - Chisme Anónimo</title>
+    <title>Mi Inbox Pro</title>
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2442404022791024" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,14 +15,7 @@
             --card-bg: #121212;
             --primary-grad: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
             --text-main: #ffffff;
-            --text-dim: #a0a0a0;
             --money-gold: #ffd700;
-            --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         body { 
@@ -31,66 +24,110 @@
             font-family: -apple-system, sans-serif; 
             margin: 0; padding: 20px; 
             display: flex; flex-direction: column; align-items: center; 
+            overflow-x: hidden; 
         }
 
-        .container { 
-            width: 100%; 
-            max-width: 500px; 
-            animation: fadeInUp 0.8s var(--transition-smooth); 
+        .container { width: 100%; max-width: 500px; margin-top: 60px; } 
+        
+        /* HEADER SUPERIOR */
+        .top-bar {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+            border-bottom: 1px solid #333;
+            box-sizing: border-box;
+        }
+
+        .logo-area { 
+            font-weight: bold; font-size: 1.2rem; 
+            color: #ffd700; 
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
         
-        h1 { font-size: 1.5rem; margin: 20px 0; text-align: center; }
+        .avatar-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 2px solid #cc2366;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png');
+            transition: transform 0.2s;
+        }
+        .avatar-btn:active { transform: scale(0.9); }
 
+        /* SIDEBAR (MENÚ LATERAL) */
+        .sidebar {
+            position: fixed; top: 0; right: -320px;
+            width: 300px; height: 100vh;
+            background: #1a1a1a;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+            z-index: 200;
+            transition: right 0.4s;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .sidebar.open { right: 0; }
+
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        
+        .sidebar-section { margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        .sidebar-section h3 { margin-top: 0; color: #a0a0a0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Estilo para el input de archivo */
+        input[type="file"] {
+            display: none;
+        }
+        .custom-file-upload {
+            border: 1px dashed #cc2366;
+            display: block;
+            padding: 15px;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 8px;
+            color: #ddd;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar input[type="password"] {
+            width: 100%; padding: 12px; margin-bottom: 10px;
+            background: #222; border: 1px solid #444; color: white;
+            border-radius: 8px; box-sizing: border-box;
+        }
+        
+        .action-btn {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            font-weight: bold; cursor: pointer; margin-top: 5px;
+        }
+        .btn-save { background: #00C851; color: white; }
+        .btn-pass { background: #33b5e5; color: white; }
+        .btn-danger { background: #ff4444; color: white; margin-top: 10px; }
+        .btn-outline { background: transparent; border: 1px solid #555; color: #aaa; }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 150;
+            display: none;
+            backdrop-filter: blur(2px);
+        }
+        .overlay.show { display: block; }
+
+        /* Estilos de mensajes */
         .mensaje-card {
-            background: var(--card-bg);
-            border: 1px solid #333;
-            border-radius: 24px;
-            padding: 25px;
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            opacity: 0; 
-            animation: fadeInUp 0.5s ease-out forwards;
-            transition: var(--transition-smooth);
+            background: var(--card-bg); border: 1px solid #333; border-radius: 24px;
+            padding: 25px; margin-bottom: 15px; display: flex; flex-direction: column;
         }
-
-        .mensaje-card:hover { transform: scale(1.02); border-color: #cc2366; }
-
-        /* DISEÑO SOLICITADO: CENTRADO E INTERLINEADO 1.5 */
-        .contenido { 
-            font-size: 1.15rem; 
-            font-weight: 500; 
-            margin-bottom: 25px; 
-            line-height: 1.5; 
-            text-align: center; 
-        }
-
+        .contenido { font-size: 1.15rem; font-weight: 500; margin-bottom: 25px; line-height: 1.5; text-align: center; }
         .btn-group { display: flex; flex-direction: column; gap: 12px; }
+        .responder-btn { background: #fff; color: #000; border: none; padding: 12px; border-radius: 50px; font-weight: bold; cursor: pointer; }
         
-        .responder-btn { 
-            background: #fff; color: #000; border: none; 
-            padding: 12px; border-radius: 50px; font-weight: bold; 
-            cursor: pointer; transition: var(--transition-smooth);
-        }
-        
-        .revelar-btn {
-            background: none; border: 1px solid var(--money-gold);
-            color: var(--money-gold); padding: 12px; border-radius: 50px;
-            font-weight: bold; cursor: pointer; font-size: 0.85rem;
-            transition: var(--transition-smooth);
-        }
-
-        .revelar-btn:hover { background: rgba(255, 215, 0, 0.1); }
-        .revelar-btn:disabled { border-color: #4ade80; color: #4ade80; cursor: default; }
-
-        #link-recuperado {
-            display: none; background: #1a1a1a; padding: 20px;
-            border-radius: 20px; margin-bottom: 20px;
-            border: 1px dashed var(--money-gold); text-align: center;
-            animation: fadeInUp 0.4s var(--transition-smooth);
-        }
-
-        .logout-btn { background: none; border: 1px solid #444; color: #ff4d4d; padding: 8px 18px; border-radius: 20px; cursor: pointer; }
+        #link-recuperado { display: none; background: #1a1a1a; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px dashed var(--money-gold); text-align: center; }
         
         #share-template { position: absolute; left: -9999px; width: 1080px; height: 1920px; background: #000; display: flex; justify-content: center; align-items: center; }
         .share-card { background: #121212; width: 850px; border-radius: 60px; text-align: center; border: 2px solid #333; overflow: hidden; }
@@ -100,18 +137,49 @@
 </head>
 <body>
 
-    <div id="share-template">
-        <div class="share-card">
-            <div class="share-header">¡Mándame mensajes anónimos!</div>
-            <div class="share-body" id="share-text">...</div>
-            <div style="padding: 40px; color: #666; font-size: 35px; background: #121212;">chisme-anonimo.vercel.app</div>
+    <div class="top-bar">
+        <div class="logo-area">Confesiones 🔥</div>
+        <div class="avatar-btn" id="avatarIcon" onclick="toggleMenu()"></div>
+    </div>
+
+    <div class="overlay" onclick="toggleMenu()"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Mi Perfil</h2>
+            <button class="close-btn" onclick="toggleMenu()">✕</button>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Foto de Perfil</h3>
+            <p style="font-size:12px; color:#666;">Selecciona una foto de tu galería</p>
+            
+            <label class="custom-file-upload">
+                <input type="file" id="fotoInput" accept="image/*">
+                📸 Tocar para buscar foto
+            </label>
+            
+            <button class="action-btn btn-save" onclick="subirFoto()">Guardar y Subir</button>
+        </div>
+
+        <div class="sidebar-section">
+            <h3>Seguridad</h3>
+            <input type="password" id="newPassword" placeholder="Nueva contraseña">
+            <button class="action-btn btn-pass" onclick="cambiarPassword()">Actualizar Contraseña</button>
+        </div>
+
+        <div class="sidebar-section" style="border:none;">
+            <h3>Zona de Peligro</h3>
+            <button class="action-btn btn-outline" onclick="cerrarSesion()">Cerrar Sesión</button>
+            <button class="action-btn btn-danger" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
         </div>
     </div>
 
     <div class="container">
-        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 20px; align-items: center;">
-            <button class="revelar-btn" style="width: auto; padding: 8px 15px; border-radius: 20px;" onclick="gestionarLink()">🔗 Mi Link</button>
-            <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
+        <div style="text-align: center; margin-bottom: 20px;">
+             <button class="action-btn btn-outline" style="width:auto; padding:10px 30px; border-color:#ffd700; color:#ffd700;" onclick="gestionarLink()">
+                🔗 Ver mi Link de Confesiones
+             </button>
         </div>
 
         <div id="link-recuperado">
@@ -119,89 +187,154 @@
             <button class="responder-btn" style="margin-top: 15px; width: 100%;" onclick="copiarLinkRecuperado()">Copiar Enlace</button>
         </div>
 
-        <h1>Mis Mensajes 📥</h1>
-        <div id="lista-mensajes">Cargando mensajes...</div>
+        <h1 style="text-align:center;">Mis Mensajes 📥</h1>
+        <div id="lista-mensajes">Cargando...</div>
+    </div>
+
+    <div id="share-template">
+        <div class="share-card">
+            <div class="share-header">¡Mándame mensajes anónimos!</div>
+            <div class="share-body" id="share-text">...</div>
+            <div style="padding: 40px; color: #666; font-size: 35px; background: #121212;">confesionesanonimo.vercel.app</div>
+        </div>
     </div>
 
     <script>
         const supabaseUrl = 'https://wfnhkuilbtomvtijsiwm.supabase.co';
-        const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5';
+        const supabaseKey = 'sb_publishable_aZvk0W9vtNtcOkcvvpuzrA_qxgE6Kb5'; 
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const META_CLICS = 5000; 
-        let miNombreUsuario = "";
+        let currentUser = null;
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.querySelector('.overlay').classList.toggle('show');
+        }
 
         async function verificarSesion() {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) window.location.href = "index.html";
-            else {
-                const { data: prof } = await _supabase.from('perfiles').select('username').eq('id', user.id).single();
-                miNombreUsuario = prof ? prof.username : user.id;
+            if (!user) {
+                window.location.href = "index.html";
+            } else {
+                currentUser = user;
+                cargarPerfil(user.id);
                 cargarMensajes(user.id);
             }
         }
 
-        function gestionarLink() {
-            const areaLink = document.getElementById('link-recuperado');
-            document.getElementById('texto-link').innerText = window.location.origin + "/send.html?u=" + miNombreUsuario;
-            areaLink.style.display = areaLink.style.display === 'none' ? 'block' : 'none';
+        async function cargarPerfil(uid) {
+            const { data } = await _supabase.from('perfiles').select('username, avatar_url').eq('id', uid).single();
+            if (data && data.avatar_url) {
+                document.getElementById('avatarIcon').style.backgroundImage = `url('${data.avatar_url}')`;
+            }
         }
 
-        function copiarLinkRecuperado() {
-            navigator.clipboard.writeText(document.getElementById('texto-link').innerText);
-            alert("¡Link copiado!");
+        // --- NUEVA LÓGICA DE SUBIDA DE FOTOS ---
+        async function subirFoto() {
+            const fileInput = document.getElementById('fotoInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                return alert("⚠️ Primero selecciona una foto.");
+            }
+
+            const btn = document.querySelector('.btn-save');
+            btn.innerText = "Subiendo...";
+            btn.disabled = true;
+
+            try {
+                // Nombre del archivo: SIEMPRE 'perfil.png' para ahorrar espacio (sobrescribe)
+                const filePath = `public/${currentUser.id}/perfil.png`;
+
+                const { error: uploadError } = await _supabase.storage
+                    .from('avatars') 
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: true 
+                    });
+
+                if (uploadError) throw uploadError;
+
+                // Obtener la URL pública
+                const { data } = _supabase.storage.from('avatars').getPublicUrl(filePath);
+                
+                // Truco ?t=tiempo para que se actualice al instante en la pantalla
+                const publicUrl = data.publicUrl + "?t=" + new Date().getTime();
+
+                // Guardar URL en base de datos
+                const { error: dbError } = await _supabase.from('perfiles')
+                    .update({ avatar_url: publicUrl })
+                    .eq('id', currentUser.id);
+
+                if (dbError) throw dbError;
+
+                alert("✅ Foto actualizada con éxito");
+                document.getElementById('avatarIcon').style.backgroundImage = `url('${publicUrl}')`;
+
+            } catch (error) {
+                alert("Error al subir: " + error.message);
+                console.error(error);
+            } finally {
+                btn.innerText = "Guardar y Subir";
+                btn.disabled = false;
+            }
         }
 
-        function contarClic(msgId, btn) {
-            let storageKey = `ads_${msgId}`;
-            let vistos = parseInt(localStorage.getItem(storageKey)) || 0;
-            if (vistos < META_CLICS) {
-                vistos++;
-                localStorage.setItem(storageKey, vistos);
-                if (vistos >= META_CLICS) {
-                    btn.innerText = "✨ Meta alcanzada - Recompensa pronto";
-                    btn.disabled = true;
-                } else {
-                    btn.innerText = `🔍 ¿Quién envió esto? (${vistos}/${META_CLICS})`;
+        async function cambiarPassword() {
+            const newPass = document.getElementById('newPassword').value;
+            if(!newPass) return alert("Escribe la nueva contraseña");
+
+            const { error } = await _supabase.auth.updateUser({ password: newPass });
+            if(error) alert("Error: " + error.message);
+            else {
+                alert("Contraseña cambiada. Tendrás que iniciar sesión de nuevo.");
+                cerrarSesion();
+            }
+        }
+
+        async function eliminarCuenta() {
+            let confirmacion = confirm("⚠️ ¿ESTÁS SEGURO? Esto borrará tu perfil y nadie podrá mandarte mensajes nunca más.");
+            if(confirmacion) {
+                const { error } = await _supabase.from('perfiles').delete().eq('id', currentUser.id);
+                if(error) alert("Error: " + error.message);
+                else {
+                    alert("Tu cuenta ha sido eliminada.");
+                    cerrarSesion();
                 }
             }
         }
 
+        async function cerrarSesion() { 
+            await _supabase.auth.signOut(); 
+            window.location.href = "index.html"; 
+        }
+
+        function gestionarLink() {
+            const areaLink = document.getElementById('link-recuperado');
+            _supabase.from('perfiles').select('username').eq('id', currentUser.id).single().then(({data}) => {
+                document.getElementById('texto-link').innerText = window.location.origin + "/" + encodeURIComponent(data.username);
+                areaLink.style.display = areaLink.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        
+        function copiarLinkRecuperado() {
+            navigator.clipboard.writeText(document.getElementById('texto-link').innerText);
+            alert("Link copiado!");
+        }
+
         async function cargarMensajes(uid) {
-            // CORRECCIÓN: Se cambió 'creado_el' por 'created_at' que es el nombre por defecto
-            const { data, error } = await _supabase.from('mensajes')
-                .select('*')
-                .eq('para', uid)
-                .order('created_at', { ascending: false });
-
+            const { data } = await _supabase.from('mensajes').select('*').eq('para', uid).order('created_at', { ascending: false });
             const listado = document.getElementById('lista-mensajes');
-            
-            if (error) {
-                console.error("Error cargando mensajes:", error);
-                listado.innerHTML = "<p style='text-align:center; color:red;'>Error al conectar con la base de datos.</p>";
-                return;
-            }
-
-            if (data.length === 0) { 
-                listado.innerHTML = "<p style='text-align:center; color:#666;'>No hay mensajes todavía.</p>"; 
-                return; 
-            }
-
             listado.innerHTML = "";
-            data.forEach((msg, index) => {
-                let vistos = parseInt(localStorage.getItem(`ads_${msg.id}`)) || 0;
+            if (!data || data.length === 0) listado.innerHTML = "<p style='text-align:center; color:#666;'>No hay mensajes todavía.</p>";
+            
+            data.forEach(msg => {
                 const card = document.createElement('div');
                 card.className = 'mensaje-card';
-                card.style.animationDelay = `${index * 0.1}s`; 
-                card.innerHTML = `
-                    <div class="contenido">${msg.contenido}</div>
-                    <div class="btn-group">
-                        <button class="responder-btn" onclick="prepararRespuesta('${msg.contenido.replace(/'/g, "\\'")}')">📷 Responder</button>
-                        <button class="revelar-btn" onclick="contarClic('${msg.id}', this)" ${vistos >= META_CLICS ? 'disabled' : ''}>
-                            ${vistos >= META_CLICS ? '✨ Meta alcanzada - Recompensa pronto' : `🔍 ¿Quién envió esto? (${vistos}/${META_CLICS})`}
-                        </button>
-                    </div>
-                `;
+                card.innerHTML = `<div class="contenido">${msg.contenido}</div>
+                                  <div class="btn-group">
+                                    <button class="responder-btn" onclick="prepararRespuesta('${msg.contenido.replace(/'/g, "\\'")}')">📷 Responder</button>
+                                  </div>`;
                 listado.appendChild(card);
             });
         }
@@ -217,7 +350,6 @@
             }, 'image/png');
         }
 
-        async function cerrarSesion() { await _supabase.auth.signOut(); window.location.href = "index.html"; }
         verificarSesion();
     </script>
 </body>

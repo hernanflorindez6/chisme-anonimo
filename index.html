@@ -19,7 +19,6 @@
             --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* --- KEYFRAMES DE ANIMACIÓN --- */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -41,7 +40,6 @@
 
         .container { width: 100%; max-width: 400px; text-align: center; }
 
-        /* Tarjeta con entrada suave */
         .card { 
             background-color: var(--card-bg); 
             border-radius: 28px; 
@@ -54,16 +52,43 @@
         h1 { font-size: 1.8rem; margin-bottom: 10px; transition: var(--transition-smooth); }
         p { color: #a0a0a0; margin-bottom: 30px; }
 
+        /* INPUTS GENERALES */
         input { 
             width: 100%; padding: 15px; margin-bottom: 10px; 
             border-radius: 12px; border: 1px solid #333; 
             background: #1a1a1a; color: white; box-sizing: border-box; 
             outline: none; transition: var(--transition-smooth); 
         }
-
         input:focus { border-color: #cc2366; background: #222; transform: translateY(-2px); }
         
-        /* Botones con micro-interacción */
+        /* --- ESTILOS NUEVOS PARA EL OJITO --- */
+        .password-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .password-container input {
+            padding-right: 50px; /* Espacio para que el texto no choque con el ojo */
+            margin-bottom: 0;
+        }
+
+        .eye-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            padding: 0;
+            color: #a0a0a0;
+            transition: color 0.3s;
+        }
+        .eye-icon:hover { color: #cc2366; }
+
+        /* BOTONES */
         .btn { 
             background: var(--primary-grad); color: white; border: none; 
             width: 100%; padding: 16px; border-radius: 40px; 
@@ -75,7 +100,6 @@
         .btn:active { transform: translateY(0) scale(0.98); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Toast animado */
         #toast { 
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); 
             background: #222; padding: 12px 25px; border-radius: 50px; 
@@ -98,7 +122,6 @@
         }
         .toggle-auth:hover { color: #f09433; transform: scale(1.05); }
 
-        /* Contenedores para transiciones de campos */
         #confirm-container, #username { transition: var(--transition-smooth); }
     </style>
 </head>
@@ -115,7 +138,13 @@
             <div id="confirm-container">
                 <input type="email" id="email-confirm" placeholder="Confirma tu correo electrónico">
             </div>
-            <input type="password" id="password" placeholder="Tu contraseña">
+            
+            <div class="password-container">
+                <input type="password" id="password" placeholder="Tu contraseña">
+                <button type="button" class="eye-icon" onclick="togglePassword()" id="togglePasswordBtn">
+                    👁️
+                </button>
+            </div>
             
             <button id="auth-btn" class="btn" onclick="manejarAuth()">Crear mi cuenta</button>
             <button class="toggle-auth" id="toggle-btn" onclick="cambiarModo()">¿Ya tienes cuenta? Entrar</button>
@@ -139,6 +168,20 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let esModoLogin = false;
+
+        // --- FUNCIÓN NUEVA: CAMBIA TIPO Y CAMBIA ÍCONO ---
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('togglePasswordBtn');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.innerText = '🙈'; // Monito tapándose los ojos (o puedes poner otro emoji)
+            } else {
+                passwordInput.type = 'password';
+                icon.innerText = '👁️'; // Ojo normal
+            }
+        }
 
         async function verificarSesionExistente() {
             const { data: { user } } = await _supabase.auth.getUser();
@@ -180,12 +223,7 @@
             const password = document.getElementById('password').value;
             const btn = document.getElementById('auth-btn');
 
-            // --- LÓGICA CORREGIDA PARA RESPETAR MAYÚSCULAS Y ESPACIOS ---
             const rawUser = document.getElementById('username').value;
-            
-            // Reemplazamos SOLO los símbolos problemáticos (&, ?, #, etc)
-            // PERMITIMOS espacios, mayúsculas, minúsculas y números.
-            // NO usamos .toLowerCase() para respetar tu escritura.
             const userAlias = rawUser.replace(/[&?#=/\\%]/g, '').trim();
 
             if (!email || !password || (!esModoLogin && (!emailConfirm || !userAlias))) {
@@ -218,7 +256,6 @@
                     btn.disabled = false;
                     btn.innerText = "Crear mi cuenta";
                 } else {
-                    // Guardamos el usuario TAL CUAL (ej: "FH PRODUCCIONES")
                     await _supabase.from('perfiles').insert([{ id: data.user.id, username: userAlias }]);
                     mostrarPantallaLink(userAlias);
                     mostrarAviso("¡Cuenta creada!", "success");
@@ -238,9 +275,6 @@
                 authSection.style.display = 'none';
                 linkSection.style.display = 'block';
                 
-                // --- CAMBIO CLAVE PARA LINK CORTO ---
-                // Quitamos "/send.html?u=" y dejamos solo "/"
-                // encodeURIComponent convierte espacios en %20 para que no se rompa
                 const link = window.location.origin + "/" + encodeURIComponent(alias);
                 
                 const display = document.getElementById('link-display');
